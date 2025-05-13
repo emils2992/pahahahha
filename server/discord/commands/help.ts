@@ -5,12 +5,18 @@ import {
 import { commands } from './index';
 import { createTutorialEmbed } from '../utils/helpers';
 
-// Define a type for Discord commands
+// Define a type for our commands to help TypeScript understand their structure
 interface DiscordCommand {
   name: string;
   description: string;
   usage: string;
   execute: (message: Message, args: string[]) => Promise<any>;
+}
+
+// Interface for command items in category lists
+interface CommandItem {
+  name: string;
+  category: string;
 }
 
 // Help command
@@ -29,17 +35,22 @@ export const helpCommand = {
           return message.reply(`"${commandName}" isminde bir komut bulunamadı.`);
         }
         
+        // Now TypeScript knows the structure of command
+        const name = command.name;
+        const description = command.description;
+        const usage = command.usage;
+        
         const helpEmbed = createTutorialEmbed(
-          `${command.name.toUpperCase()} Komutu Yardımı`,
-          `**Açıklama:** ${command.description}\n\n` +
-          `**Kullanım:** ${command.usage}\n\n`
+          `${name.toUpperCase()} Komutu Yardımı`,
+          `**Açıklama:** ${description}\n\n` +
+          `**Kullanım:** ${usage}\n\n`
         );
         
         return message.reply({ embeds: [helpEmbed] });
       }
       
       // Otherwise, show all commands grouped by category
-      const mainCommands = [
+      const mainCommands: CommandItem[] = [
         { name: 'basın', category: 'Ana Komutlar' },
         { name: 'karar', category: 'Ana Komutlar' },
         { name: 'özür', category: 'Ana Komutlar' },
@@ -49,12 +60,12 @@ export const helpCommand = {
         { name: 'durum', category: 'Ana Komutlar' }
       ];
       
-      const mediaCommands = [
+      const mediaCommands: CommandItem[] = [
         { name: 'dedikodu', category: 'Medya Komutları' },
         { name: 'sızdır', category: 'Medya Komutları' }
       ];
       
-      const minigameCommands = [
+      const minigameCommands: CommandItem[] = [
         { name: 'yalanmakinesi', category: 'Minigame Komutları' },
         { name: 'hakem', category: 'Minigame Komutları' },
         { name: 'taraftar', category: 'Minigame Komutları' },
@@ -71,18 +82,24 @@ export const helpCommand = {
         .setFooter({ text: 'Futbol RP Bot - Premier League 2025/26' });
       
       // Add command categories
-      const addCommandsToEmbed = (commandList: { name: string, category: string }[], embed: MessageEmbed) => {
+      const addCommandsToEmbed = (commandList: CommandItem[], embed: MessageEmbed) => {
+        if (commandList.length === 0) return;
+        
         const categoryName = commandList[0].category;
         const commandTexts: string[] = [];
         
         commandList.forEach(cmd => {
-          const command = commands.get(cmd.name);
-          if (command && command.name && command.description) {
+          const command = commands.get(cmd.name) as DiscordCommand | undefined;
+          // Only add commands that exist in the collection
+          if (command) {
             commandTexts.push(`**${command.name}** - ${command.description}`);
           }
         });
         
-        embed.addField(`🔹 ${categoryName}`, commandTexts.join('\n'));
+        // Only add the field if there are commands to display
+        if (commandTexts.length > 0) {
+          embed.addField(`🔹 ${categoryName}`, commandTexts.join('\n'));
+        }
       };
       
       // Add all command categories to the embed
