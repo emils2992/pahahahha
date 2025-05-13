@@ -360,7 +360,12 @@ export class MemStorage implements IStorage {
     return updatedUser;
   }
   
-  async checkCommandTimeout(discordId: string, commandName: string, timeoutMinutes: number): Promise<boolean> {
+  async checkCommandTimeout(discordId: string, commandName: string, timeoutMinutes: number, isAdmin: boolean = false): Promise<boolean> {
+    // Eğer yetkili ise, zaman sınırlamasını atla
+    if (isAdmin) {
+      return true;
+    }
+    
     const user = await this.getUserByDiscordId(discordId);
     if (!user) return true; // Kullanıcı bulunamadı, işleme izin ver
     
