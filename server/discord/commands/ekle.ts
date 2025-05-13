@@ -137,13 +137,98 @@ async function showPlayerAddForm(message: Message, team: Team): Promise<void> {
     .setColor('#2ecc71')
     .setTitle(`${team.name} - Yeni Oyuncu Ekleme`)
     .setDescription('Yeni bir oyuncu eklemek için aşağıdaki komutu kullanın:')
-    .addField('Komut', `\`.yap ekle ${team.name} [oyuncu adı] [pozisyon]\``)
-    .addField('Örnek', `\`.yap ekle ${team.name} Messi Forvet\``)
+    .addField('Komut (Metin ile Pozisyon)', `\`.ekle ${team.name} [oyuncu adı] [pozisyon]\``)
+    .addField('Komut (Buton ile Pozisyon)', `\`.ekle ${team.name} [oyuncu adı] seç\``)
+    .addField('Örnek', `\`.ekle ${team.name} Messi Forvet\` veya \`.ekle ${team.name} Messi seç\``)
     .addField('Pozisyonlar', positions.join(', '))
     .addField('Mevcut Oyuncular', await getTeamPlayersList(team.id))
     .setFooter({ text: 'Transfer Penceresi' });
     
   message.channel.send({ embeds: [embed] });
+}
+
+// Pozisyon seçim butonları göster
+async function showPositionSelectionButtons(message: Message, team: Team, playerName: string): Promise<void> {
+  const embed = new MessageEmbed()
+    .setColor('#3498db')
+    .setTitle(`${team.name} - ${playerName} için Pozisyon Seçimi`)
+    .setDescription(`**${playerName}** için bir pozisyon seçin:`)
+    .setFooter({ text: 'Transferin tamamlanması için bir pozisyon seçin.' });
+  
+  // Pozisyon butonları
+  const row = new MessageActionRow()
+    .addComponents(
+      new MessageButton()
+        .setCustomId(`pos_Kaleci_${team.id}_${playerName}`)
+        .setLabel('Kaleci')
+        .setStyle('PRIMARY')
+        .setEmoji('🧤'),
+      new MessageButton()
+        .setCustomId(`pos_Defans_${team.id}_${playerName}`)
+        .setLabel('Defans')
+        .setStyle('PRIMARY')
+        .setEmoji('🛡️'),
+      new MessageButton()
+        .setCustomId(`pos_Orta Saha_${team.id}_${playerName}`)
+        .setLabel('Orta Saha')
+        .setStyle('PRIMARY')
+        .setEmoji('⚙️'),
+      new MessageButton()
+        .setCustomId(`pos_Forvet_${team.id}_${playerName}`)
+        .setLabel('Forvet')
+        .setStyle('PRIMARY')
+        .setEmoji('⚽')
+    );
+  
+  const sentMessage = await message.channel.send({ embeds: [embed], components: [row] });
+  
+  // Buton tıklama olayını dinle
+  const filter = (i: any) => {
+    return i.customId.startsWith('pos_') && i.user.id === message.author.id;
+  };
+  
+  const collector = sentMessage.createMessageComponentCollector({ 
+    filter, 
+    time: 30000 // 30 saniye süre
+  });
+  
+  collector.on('collect', async (interaction: any) => {
+    // Buton verilerini analiz et
+    const [prefix, position, teamId, ...playerNameParts] = interaction.customId.split('_');
+    const fullPlayerName = playerNameParts.join('_'); // İsimde _ karakteri varsa
+    
+    // Rastgele forma numarası oluştur
+    const jerseyNumber = Math.floor(Math.random() * 99) + 1;
+    
+    // Oyuncuyu takıma ekle
+    await addPlayerToTeam(message, team, playerName, position, jerseyNumber);
+    
+    // Butonu devre dışı bırak
+    await interaction.update({ 
+      components: [], 
+      embeds: [
+        new MessageEmbed()
+          .setColor('#2ecc71')
+          .setTitle('Pozisyon Seçildi')
+          .setDescription(`**${playerName}** için **${position}** pozisyonu seçildi.`)
+      ]
+    });
+  });
+  
+  // Zaman aşımı
+  collector.on('end', async (collected, reason) => {
+    if (reason === 'time' && collected.size === 0) {
+      await sentMessage.edit({
+        components: [],
+        embeds: [
+          new MessageEmbed()
+            .setColor('#e74c3c')
+            .setTitle('Zaman Aşımı')
+            .setDescription('Pozisyon seçimi için süre doldu. Lütfen tekrar deneyin.')
+        ]
+      });
+    }
+  });
 }
 
 // Takımın mevcut oyuncularını getir

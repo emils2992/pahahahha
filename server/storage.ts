@@ -39,6 +39,7 @@ export interface IStorage {
   getPlayersByTeamId(teamId: number): Promise<Player[]>;
   createPlayer(player: InsertPlayer): Promise<Player>;
   updatePlayerMood(id: number, moodChange: number): Promise<Player | undefined>;
+  deletePlayer(id: number): Promise<boolean>;
   
   // Game session operations
   createGameSession(session: InsertGameSession): Promise<GameSession>;
@@ -62,6 +63,40 @@ export class MemStorage implements IStorage {
   private playerIdCounter: number;
   private gameSessionIdCounter: number;
   private teamOwnershipIdCounter: number;
+  
+  // Team ownership methods implementation
+  async getTeamOwner(teamId: number): Promise<User | undefined> {
+    const ownership = Array.from(this.teamOwnerships.values()).find(
+      (ownership) => ownership.teamId === teamId
+    );
+    
+    if (!ownership) return undefined;
+    return this.users.get(ownership.userId);
+  }
+  
+  async isTeamOwned(teamName: string): Promise<boolean> {
+    const team = await this.getTeamByName(teamName);
+    if (!team) return false;
+    
+    const ownership = Array.from(this.teamOwnerships.values()).find(
+      (ownership) => ownership.teamId === team.id
+    );
+    
+    return !!ownership;
+  }
+  
+  async assignTeamToUser(teamId: number, userId: number): Promise<TeamOwnership> {
+    const id = this.teamOwnershipIdCounter++;
+    const ownership: TeamOwnership = { 
+      id, 
+      teamId, 
+      userId, 
+      createdAt: new Date().toISOString() 
+    };
+    
+    this.teamOwnerships.set(id, ownership);
+    return ownership;
+  }
   
   constructor() {
     this.users = new Map();
@@ -217,6 +252,11 @@ export class MemStorage implements IStorage {
     const updatedPlayer = { ...player, mood: updatedMood };
     this.players.set(id, updatedPlayer);
     return updatedPlayer;
+  }
+  
+  async deletePlayer(id: number): Promise<boolean> {
+    if (!this.players.has(id)) return false;
+    return this.players.delete(id);
   }
   
   // Game session operations

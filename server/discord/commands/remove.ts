@@ -195,8 +195,8 @@ async function confirmPlayerRemoval(message: Message, player: Player, teamName: 
       if (interaction.customId === 'confirm_remove') {
         // Remove the player
         try {
-          // Remove player from database (Note: In this simulation, we just set mood to 0)
-          await storage.updatePlayerMood(player.id, -100); // This would mark the player as inactive
+          // Oyuncuyu veritabanından tamamen sil
+          await storage.deletePlayer(player.id);
           
           const successEmbed = new MessageEmbed()
             .setColor('#2ecc71')
