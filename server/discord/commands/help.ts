@@ -5,6 +5,14 @@ import {
 import { commands } from './index';
 import { createTutorialEmbed } from '../utils/helpers';
 
+// Define a type for Discord commands
+interface DiscordCommand {
+  name: string;
+  description: string;
+  usage: string;
+  execute: (message: Message, args: string[]) => Promise<any>;
+}
+
 // Help command
 export const helpCommand = {
   name: 'help',
@@ -15,7 +23,7 @@ export const helpCommand = {
       // If a specific command is requested
       if (args.length > 0) {
         const commandName = args[0].toLowerCase();
-        const command = commands.get(commandName);
+        const command = commands.get(commandName) as DiscordCommand | undefined;
         
         if (!command) {
           return message.reply(`"${commandName}" isminde bir komut bulunamadı.`);
@@ -34,14 +42,11 @@ export const helpCommand = {
       const mainCommands = [
         { name: 'basın', category: 'Ana Komutlar' },
         { name: 'karar', category: 'Ana Komutlar' },
-        { name: 'kadrodisi', category: 'Ana Komutlar' },
         { name: 'özür', category: 'Ana Komutlar' },
         { name: 'taktik', category: 'Ana Komutlar' },
         { name: 'takim', category: 'Ana Komutlar' },
-        { name: 'takımım', category: 'Ana Komutlar' },
         { name: 'bülten', category: 'Ana Komutlar' },
-        { name: 'durum', category: 'Ana Komutlar' },
-        { name: 'ekle', category: 'Ana Komutlar' }
+        { name: 'durum', category: 'Ana Komutlar' }
       ];
       
       const mediaCommands = [
@@ -72,7 +77,7 @@ export const helpCommand = {
         
         commandList.forEach(cmd => {
           const command = commands.get(cmd.name);
-          if (command) {
+          if (command && command.name && command.description) {
             commandTexts.push(`**${command.name}** - ${command.description}`);
           }
         });

@@ -19,7 +19,7 @@ export const commands = new Collection();
 // Register all commands
 commands.set('basın', basinCommand);
 commands.set('karar', kararCommand);
-commands.set('kadrodisi', kadroCommand);
+// commands.set('kadrodisi', kadroCommand); // Removed from available commands
 commands.set('özür', özürCommand);
 commands.set('taktik', taktikCommand);
 commands.set('dedikodu', dedikoduCommand);
@@ -33,7 +33,7 @@ commands.set('bülten', bültenCommand);
 commands.set('help', helpCommand);
 commands.set('yardım', helpCommand); // Turkish alternative for help
 commands.set('durum', durumCommand);
-commands.set('ekle', ekleCommand);
-commands.set('takımım', takimimCommand);
+// commands.set('ekle', ekleCommand); // Removed from available commands
+// commands.set('takımım', takimimCommand); // Removed from available commands
 commands.set('vs', vsCommand);
-commands.set('remove', removeCommand);
+// commands.set('remove', removeCommand); // Removed from available commands
