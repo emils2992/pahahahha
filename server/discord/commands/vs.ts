@@ -247,52 +247,37 @@ async function playRound(message: Message, player1: DiscordUser, player2: Discor
         .setEmoji('↗️')
     );
   
-  // Send shooter message
-  const shooterMessage = await shooter.send({
-    embeds: [
-      new MessageEmbed()
-        .setColor('#3498db')
-        .setTitle('⚽ Penaltı Atışı')
-        .setDescription('Penaltı atışınızı nereye yapacaksınız?')
-        .setFooter({ text: 'Seçiminizi 10 saniye içinde yapın!' })
-    ],
+  // Reply with interaction message to channel, use ephemeral to ensure privacy
+  await message.reply({
+    content: `⚽ **${shooter.username}** ve **${goalkeeper.username}** arasında penaltı atışları başladı!`,
+    components: []
+  });
+  
+  // Send shooter message as a reply in channel 
+  const shooterEmbed = new MessageEmbed()
+    .setColor('#3498db')
+    .setTitle('⚽ Penaltı Atışı')
+    .setDescription(`**${shooter.username}**, penaltı atışınızı nereye yapacaksınız?`)
+    .setFooter({ text: 'Seçiminizi 10 saniye içinde yapın!' });
+  
+  const shooterMessage = await message.channel.send({
+    content: `<@${shooter.id}>`,
+    embeds: [shooterEmbed],
     components: [shooterRow]
-  }).catch(error => {
-    // Handle DM closed error
-    console.error('Shooter DM error:', error);
-    message.channel.send(`**${shooter.username}** lütfen özel mesajlarınızı açın!`);
-    return null;
   });
   
-  // Send goalkeeper message
-  const goalkeeperMessage = await goalkeeper.send({
-    embeds: [
-      new MessageEmbed()
-        .setColor('#3498db')
-        .setTitle('🧤 Kaleci Hamlesi')
-        .setDescription('Penaltıyı kurtarmak için hangi yöne atlayacaksınız?')
-        .setFooter({ text: 'Seçiminizi 10 saniye içinde yapın!' })
-    ],
+  // Send goalkeeper message as a reply in channel
+  const goalkeeperEmbed = new MessageEmbed()
+    .setColor('#3498db')
+    .setTitle('🧤 Kaleci Hamlesi')
+    .setDescription(`**${goalkeeper.username}**, penaltıyı kurtarmak için hangi yöne atlayacaksınız?`)
+    .setFooter({ text: 'Seçiminizi 10 saniye içinde yapın!' });
+  
+  const goalkeeperMessage = await message.channel.send({
+    content: `<@${goalkeeper.id}>`,
+    embeds: [goalkeeperEmbed],
     components: [goalkeeperRow]
-  }).catch(error => {
-    // Handle DM closed error
-    console.error('Goalkeeper DM error:', error);
-    message.channel.send(`**${goalkeeper.username}** lütfen özel mesajlarınızı açın!`);
-    return null;
   });
-  
-  // Abort game if either DM fails
-  if (!shooterMessage || !goalkeeperMessage) {
-    await message.channel.send({
-      embeds: [
-        new MessageEmbed()
-          .setColor('#e74c3c')
-          .setTitle('❌ Oyun İptal Edildi')
-          .setDescription('Özel mesajlar kapalı olduğu için oyun iptal edildi. Lütfen özel mesajlarınızı açıp tekrar deneyin.')
-      ]
-    });
-    return;
-  }
   
   // Send waiting message to main channel
   const waitingMessage = await message.channel.send({

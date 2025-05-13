@@ -9,7 +9,7 @@ import { createTutorialEmbed } from '../utils/helpers';
 export const helpCommand = {
   name: 'help',
   description: 'Tüm komutları ve açıklamaları göster',
-  usage: '.yap help [komut adı]',
+  usage: '.help [komut adı] veya .h help [komut adı]',
   execute: async (message: Message, args: string[]) => {
     try {
       // If a specific command is requested
@@ -60,8 +60,9 @@ export const helpCommand = {
       const helpEmbed = new MessageEmbed()
         .setColor('#5865F2')
         .setTitle('📚 Futbol RP Bot - Komut Listesi')
-        .setDescription('Tüm komutlar `.yap` öneki ile kullanılır. Örnek: `.yap takim`\n\n' +
-                        'Belirli bir komut hakkında daha fazla bilgi almak için `.yap help [komut]` komutunu kullanabilirsin.')
+        .setDescription('Komutlar doğrudan `.` öneki ile kullanılabilir. Örnek: `.durum`\n\n' +
+                        'Alternatif olarak `.h` öneki de kullanılabilir. Örnek: `.h durum`\n\n' +
+                        'Belirli bir komut hakkında daha fazla bilgi almak için `.help [komut]` veya `.h help [komut]` komutunu kullanabilirsin.')
         .setFooter({ text: 'Futbol RP Bot - Premier League 2025/26' });
       
       // Add command categories
