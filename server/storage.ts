@@ -290,7 +290,7 @@ export class MemStorage implements IStorage {
     });
     
     // Takım oyuncularını oluştur
-    import('../discord/data/teams').then(module => {
+    import('./discord/data/teams').then(module => {
       if (module.initializeTeamPlayers) {
         module.initializeTeamPlayers().catch(err => {
           console.error('Takım oyuncuları oluşturulurken hata:', err);
