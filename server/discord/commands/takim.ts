@@ -16,7 +16,7 @@ import { createTutorialEmbed } from '../utils/helpers';
 export const takimCommand = {
   name: 'takim',
   description: 'Takım seçme komutu',
-  usage: '.yap takim [takım adı]',
+  usage: '.h takim [takım adı]',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get or create user

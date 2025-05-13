@@ -45,6 +45,14 @@ export const gameSessions = pgTable("game_sessions", {
   createdAt: text("created_at").notNull(),
 });
 
+// Team ownership table to track which user owns which team
+export const teamOwnership = pgTable("team_ownership", {
+  id: serial("id").primaryKey(),
+  teamId: integer("team_id").notNull().unique(),
+  userId: integer("user_id").notNull(),
+  assignedAt: text("assigned_at").notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -62,6 +70,10 @@ export const insertGameSessionSchema = createInsertSchema(gameSessions).omit({
   id: true,
 });
 
+export const insertTeamOwnershipSchema = createInsertSchema(teamOwnership).omit({
+  id: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -74,6 +86,9 @@ export type Player = typeof players.$inferSelect;
 
 export type InsertGameSession = z.infer<typeof insertGameSessionSchema>;
 export type GameSession = typeof gameSessions.$inferSelect;
+
+export type InsertTeamOwnership = z.infer<typeof insertTeamOwnershipSchema>;
+export type TeamOwnership = typeof teamOwnership.$inferSelect;
 
 // Type for press conference results
 export type PressConferenceResult = {
