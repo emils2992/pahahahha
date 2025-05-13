@@ -25,6 +25,17 @@ export const yalanMakinesiCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
+      // 6 saat zaman kısıtlaması kontrol et
+      const canUseCommand = await storage.checkCommandTimeout(
+        user.discordId, 
+        "yalanmakinesi_command", 
+        360 // 6 saat = 360 dakika
+      );
+      
+      if (!canUseCommand) {
+        return message.reply('Yalan makinesi komutunu kullanmak için 6 saat beklemelisiniz!');
+      }
+      
       if (!args.length) {
         return message.reply({
           embeds: [

@@ -32,6 +32,17 @@ export const dedikoduCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
+      // 6 saat zaman kısıtlaması kontrol et
+      const canUseCommand = await storage.checkCommandTimeout(
+        user.discordId, 
+        "dedikodu_command", 
+        360 // 6 saat = 360 dakika
+      );
+      
+      if (!canUseCommand) {
+        return message.reply('Dedikodu komutunu kullanmak için 6 saat beklemelisiniz!');
+      }
+      
       // Get a random gossip
       const gossip = getRandomGossip(user.currentTeam);
       
@@ -142,6 +153,17 @@ export const sızdırCommand = {
       // Check if user has a team
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
+      
+      // 6 saat zaman kısıtlaması kontrol et
+      const canUseCommand = await storage.checkCommandTimeout(
+        user.discordId, 
+        "sizdir_command", 
+        360 // 6 saat = 360 dakika
+      );
+      
+      if (!canUseCommand) {
+        return message.reply('Sızdır komutunu kullanmak için 6 saat beklemelisiniz!');
+      }
       
       // Get gossip options
       const gossipOptions = getGossipOptions();

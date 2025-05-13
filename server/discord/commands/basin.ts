@@ -35,6 +35,22 @@ export const basinCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
+      // Kullanıcı yetkili mi kontrol et (yetkililerin ID'lerini burada belirle)
+      const adminUserIds = ['794205713533894696']; // Yetkili kullanıcı ID'lerini buraya ekle
+      const isAdmin = adminUserIds.includes(message.author.id);
+      
+      // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
+      const canUseCommand = await storage.checkCommandTimeout(
+        user.discordId, 
+        "basin_command", 
+        360, // 6 saat = 360 dakika
+        isAdmin // Yetkili ise zaman kısıtlaması yok
+      );
+      
+      if (!canUseCommand) {
+        return message.reply('Basin komutunu kullanmak için 6 saat beklemelisiniz!');
+      }
+      
       // Parse arguments
       const timing = args[0]?.toLowerCase();
       const coachName = args.slice(1).join(' ') || user.username;
