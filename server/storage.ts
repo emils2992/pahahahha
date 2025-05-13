@@ -95,7 +95,7 @@ export class MemStorage implements IStorage {
       id, 
       teamId, 
       userId, 
-      createdAt: new Date().toISOString() 
+      assignedAt: new Date().toISOString() 
     };
     
     this.teamOwnerships.set(id, ownership);
