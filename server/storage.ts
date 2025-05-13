@@ -37,6 +37,7 @@ export interface IStorage {
   
   // Game session operations
   createGameSession(session: InsertGameSession): Promise<GameSession>;
+  getGameSession(id: number): Promise<GameSession | undefined>;
   getActiveSessionByUserId(userId: number, sessionType: string): Promise<GameSession | undefined>;
   updateGameSession(id: number, sessionData: any): Promise<GameSession | undefined>;
   endGameSession(id: number): Promise<boolean>;
@@ -210,6 +211,10 @@ export class MemStorage implements IStorage {
     const session: GameSession = { ...insertSession, id };
     this.gameSessions.set(id, session);
     return session;
+  }
+  
+  async getGameSession(id: number): Promise<GameSession | undefined> {
+    return this.gameSessions.get(id);
   }
   
   async getActiveSessionByUserId(userId: number, sessionType: string): Promise<GameSession | undefined> {
