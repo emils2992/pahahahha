@@ -67,7 +67,7 @@ export const basinCommand = {
           timing,
           coachName,
           currentQuestion: 0,
-          questions: getRandomQuestions(timing, 3),
+          questions: getRandomQuestions(timing, 10),
           answers: [],
         },
         isActive: true,
