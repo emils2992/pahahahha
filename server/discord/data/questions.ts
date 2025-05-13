@@ -78,6 +78,41 @@ const preMatchQuestions: PressQuestion[] = [
     category: 'tactical',
     positiveKeywords: ['çalıştık', 'düzelttik', 'geliştirdik', 'analiz', 'çözüm'],
     negativeKeywords: ['sorun', 'zaaf', 'endişe', 'zayıf', 'kötü']
+  },
+  {
+    question: 'Bu sezon takımınızın oyun sitiliyle ilgili eleştiriler var. Bu eleştirilere yanıtınız nedir?',
+    context: 'Takımınızın oyun stili medyada çok tartışılıyor',
+    category: 'tactical',
+    positiveKeywords: ['felsefe', 'sistem', 'sabır', 'inanç', 'strateji', 'plan', 'gelişim'],
+    negativeKeywords: ['eleştiri', 'haklılar', 'değiştireceğiz', 'hata', 'başarısız', 'sorunlu', 'kaygı']
+  },
+  {
+    question: 'Medyada transfer haberleri çıkan oyuncunuz için ne söyleyeceksiniz? Takımda kalacak mı?',
+    context: 'Takımınızın yıldız oyuncusu için transfer teklifleri var',
+    category: 'player',
+    positiveKeywords: ['odaklı', 'mutlu', 'profesyonel', 'değerli', 'projemizin parçası', 'güveniyoruz', 'kalacak'],
+    negativeKeywords: ['gidebilir', 'teklif', 'değerlendiririz', 'kararsız', 'mutsuz', 'karar verecek', 'para']
+  },
+  {
+    question: 'Önümüzdeki kritik maçlar için özel bir hazırlık yapıyor musunuz?',
+    context: 'Takımınızı zorlu bir fikstür bekliyor',
+    category: 'tactical',
+    positiveKeywords: ['hazırlık', 'analiz', 'strateji', 'maç maç', 'çalışıyoruz', 'planlıyoruz', 'hazırız'],
+    negativeKeywords: ['endişe', 'zor', 'kaygı', 'baskı', 'yetersiz', 'korku', 'zorlanacağız']
+  },
+  {
+    question: 'Antrenman yoğunluğu hakkında ne düşünüyorsunuz? Oyuncular yorgunluktan şikayet ediyor mu?',
+    context: 'Sakatlıklar nedeniyle antrenman programınız sorgulanıyor',
+    category: 'player',
+    positiveKeywords: ['bilimsel', 'ölçümlü', 'programlı', 'dinlenme', 'denge', 'sağlıklı', 'kontrollü'],
+    negativeKeywords: ['yoğun', 'yorgun', 'şikayet', 'sakatlık', 'ağır', 'zorlanıyorlar', 'baskı']
+  },
+  {
+    question: 'Takımınızın en güçlü ve en zayıf yönleri nelerdir?',
+    context: 'Yarınki maçtan önce takım analizi yapılıyor',
+    category: 'tactical',
+    positiveKeywords: ['güçlü', 'birlik', 'kalite', 'ruh', 'karakter', 'yetenek', 'güven'],
+    negativeKeywords: ['zayıf', 'eksik', 'yetersiz', 'sorunlu', 'çalışıyoruz', 'geliştiriyoruz', 'problem']
   }
 ];
 
@@ -152,6 +187,48 @@ const postMatchQuestions: PressQuestion[] = [
     category: 'general',
     positiveKeywords: ['anlayış', 'destek', 'hak', 'çalışacağız', 'düzelteceğiz'],
     negativeKeywords: ['haksız', 'kırıldım', 'üzgünüm', 'sabırsız', 'eleştiri']
+  },
+  {
+    question: 'Rakip takımın teknik direktörünün maç sonu açıklamaları hakkında ne düşünüyorsunuz?',
+    context: 'Rakip teknik direktör sizin takımınızın oyun tarzını eleştirdi',
+    category: 'rival',
+    positiveKeywords: ['saygı', 'yorum yapmak istemiyorum', 'kendi işime bakarım', 'profesyonel', 'odaklanmıyorum'],
+    negativeKeywords: ['haksız', 'saçma', 'yanlış', 'kabul etmiyorum', 'kendi takımına baksın', 'basit']
+  },
+  {
+    question: 'Maçta yaşanan tartışmalı pozisyon hakkında ne düşünüyorsunuz?',
+    context: 'Kritik bir pozisyonda VAR kararı aleyhinize çıktı',
+    category: 'result',
+    positiveKeywords: ['teknoloji', 'kabul ediyoruz', 'saygı duyuyoruz', 'odaklanmıyoruz', 'bahane değil'],
+    negativeKeywords: ['hata', 'yanlış', 'adaletsiz', 'skandal', 'itiraz', 'haksızlık', 'tekrar edilmeli']
+  },
+  {
+    question: 'Oyuncularınızdan birinin kırmızı kart görmesi takımı nasıl etkiledi?',
+    context: 'Takımınız maçta 10 kişi kaldı',
+    category: 'tactical',
+    positiveKeywords: ['uyum', 'mücadele', 'strateji', 'değişiklik', 'adaptasyon', 'birlik', 'disiplin'],
+    negativeKeywords: ['zorlaştı', 'hata', 'gereksiz', 'kızgınım', 'konuşacağım', 'ceza', 'sorumsuzluk']
+  },
+  {
+    question: 'Bu galibiyetten sonra takımın özgüveni ne durumda?',
+    context: 'Zorlu bir rakibi yendiniz',
+    category: 'general',
+    positiveKeywords: ['kendimize güveniyoruz', 'moral', 'motivasyon', 'inanç', 'hedef', 'aynı odak', 'sürdürmek'],
+    negativeKeywords: ['abartmıyoruz', 'bir maç sadece', 'ayakları yere', 'rehavet', 'tehlikeli', 'aşırı özgüven']
+  },
+  {
+    question: 'Yedek kulübesinden gelen oyuncuların katkısı hakkında ne düşünüyorsunuz?',
+    context: 'Maç içindeki değişiklikler oyuna etki etti',
+    category: 'player',
+    positiveKeywords: ['katkı', 'hazır', 'profesyonel', 'değer', 'rekabet', 'kalite', 'etki'],
+    negativeKeywords: ['yeterli değil', 'beklentinin altında', 'gelişmeli', 'çalışmalı', 'daha fazlası', 'memnun değilim']
+  },
+  {
+    question: 'Maç planınız ne kadar başarılı oldu?',
+    context: 'Maç öncesi açıkladığınız stratejiler uygulandı mı',
+    category: 'tactical',
+    positiveKeywords: ['plan', 'uygulama', 'başarılı', 'analiz', 'hazırlık', 'disiplin', 'takım çalışması'],
+    negativeKeywords: ['değişti', 'uymadık', 'başarısız', 'yetersiz', 'zorlandık', 'rakip engelledi', 'adapte olamadık']
   }
 ];
 

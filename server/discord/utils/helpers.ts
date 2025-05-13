@@ -27,28 +27,68 @@ export function calculatePressResult(
 // Function to evaluate a single answer
 function evaluateAnswer(question: PressQuestion, answer: string): number {
   let score = 5; // Start with neutral score
+  const answerLower = answer.toLowerCase();
   
-  // Check for positive and negative keywords
+  // Count positive keywords found in answer
+  let positiveCount = 0;
   for (const keyword of question.positiveKeywords) {
-    if (answer.toLowerCase().includes(keyword.toLowerCase())) {
-      score += 1;
+    if (answerLower.includes(keyword.toLowerCase())) {
+      positiveCount++;
+      // Give higher score for more important/longer keywords
+      score += keyword.length > 6 ? 1.5 : 1;
     }
   }
   
+  // Count negative keywords found in answer  
+  let negativeCount = 0;
   for (const keyword of question.negativeKeywords) {
-    if (answer.toLowerCase().includes(keyword.toLowerCase())) {
-      score -= 1;
+    if (answerLower.includes(keyword.toLowerCase())) {
+      negativeCount++;
+      // Penalize more for negative keywords
+      score -= keyword.length > 6 ? 1.5 : 1;
     }
   }
   
-  // Consider answer length
-  if (answer.length < 10) {
-    score -= 2; // Penalty for very short answers
+  // Consider category-specific aspects of the answer
+  switch (question.category) {
+    case 'tactical':
+      // Tactical questions reward detailed, specific answers
+      if (answerLower.includes('sistem') || answerLower.includes('strateji') || answerLower.includes('analiz')) {
+        score += 1;
+      }
+      break;
+    case 'player':
+      // Player questions reward supportive responses
+      if (answerLower.includes('destek') || answerLower.includes('güven') || answerLower.includes('inanıyorum')) {
+        score += 1;
+      }
+      break;
+    case 'rival':
+      // Rival questions reward respectful but confident responses
+      if ((answerLower.includes('saygı') || answerLower.includes('profesyonel')) && 
+          (answerLower.includes('hazır') || answerLower.includes('kendimize'))) {
+        score += 1.5;
+      }
+      break;
+  }
+  
+  // Consider answer length and detail
+  if (answer.length < 15) {
+    score -= 2; // Significant penalty for very short answers
+  } else if (answer.length < 30) {
+    score -= 1; // Minor penalty for short answers
   } else if (answer.length > 100) {
     score += 1; // Bonus for detailed answers
+  } else if (answer.length > 200) {
+    score += 2; // Larger bonus for very detailed answers
   }
   
-  // Cap score
+  // Extra point if using both positive keywords and avoiding negative ones
+  if (positiveCount > 1 && negativeCount === 0) {
+    score += 1;
+  }
+  
+  // Cap score between 0 and 10
   return Math.max(0, Math.min(10, score));
 }
 
