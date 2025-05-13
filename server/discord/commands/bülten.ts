@@ -81,11 +81,11 @@ function generateBulletinItems(user: any, teamName: string): { title: string; co
   
   // Young player status
   const youngPlayerReports = [
-    `Genç oyuncu Ali Yılmaz formayı zorluyor. Antrenman performansıyla teknik ekibin dikkatini çekti.`,
-    `Altyapıdan yükselen Mehmet Kaya'nın gelişimi göz dolduruyor. Yakında A takımda şans bulabilir.`,
-    `U19 takımından Eren Demir, profesyonel sözleşme için görüşmelere başlandı.`,
-    `Genç kaleci Ozan Yıldız, antrenman performansıyla göz dolduruyor.`,
-    `Altyapı maçlarında parlayan Serkan Öztürk, A takım idmanlarına katılmaya başladı.`
+    `Altyapıdan bir genç oyuncu formayı zorluyor. Antrenman performansıyla teknik ekibin dikkatini çekti.`,
+    `Altyapıdan yükselen gençlerin gelişimi göz dolduruyor. Yakında A takımda şans bulabilirler.`,
+    `U19 takımından parlayan oyuncularla profesyonel sözleşme için görüşmelere başlandı.`,
+    `Genç akademi oyuncuları, antrenman performanslarıyla göz dolduruyor.`,
+    `Altyapı maçlarında başarılı olan gençler, A takım idmanlarına katılmaya başladı.`
   ];
   
   bulletinItems.push({
@@ -96,12 +96,13 @@ function generateBulletinItems(user: any, teamName: string): { title: string; co
   // Health status
   const healthReports = [
     `Sakatlığı bulunan oyuncuların tedavisi sürüyor. Sağlık ekibi olumlu gelişmeler olduğunu bildirdi.`,
-    `Ahmet Yılmaz'ın tedavisi tamamlandı. Önümüzdeki maçta kadroda yer alabilir.`,
-    `Sakatlanan Kerem Aktürk'ün durumu ciddi. En az 3 hafta takımdan uzak kalacak.`,
     `Hafif sakatlık yaşayan oyuncular bireysel çalışmalarına devam ediyor.`,
-    `Sağlık ekibi yoğun tempoya karşı önlemler alıyor. Oyunculara özel beslenme programı uygulanıyor.`
+    `Sağlık ekibi yoğun tempoya karşı önlemler alıyor. Oyunculara özel beslenme programı uygulanıyor.`,
+    `Sağlık ekibi tüm oyuncuların durumunun iyi olduğunu bildirdi. Herhangi bir sakatlık sorunu yok.`,
+    `Takımda bazı oyuncular yorgunluk belirtileri gösteriyor. Ekstra dinlenme programı uygulanıyor.`
   ];
   
+  // Get a random health report that doesn't reference specific players
   bulletinItems.push({
     title: '🩺 Sağlık Durumu',
     content: healthReports[Math.floor(Math.random() * healthReports.length)],
