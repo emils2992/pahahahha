@@ -1,119 +1,160 @@
-import { 
-  Message, 
-  MessageEmbed 
-} from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import { storage } from '../../storage';
-import { checkUserTeam } from '../utils/helpers';
+import { User, Team, GameSession } from '@shared/schema';
 import { formatTimestamp } from '../utils/helpers';
+import { getTeamTraits } from '../data/teamTraits';
 
-// Status command - shows user's current stats and team info
 export const durumCommand = {
   name: 'durum',
-  description: 'Teknik direktör ve takım durumunu göster',
+  description: 'Oyundaki performansınızı ve durumunuzu gösterir',
   usage: '.yap durum',
+  category: 'genel',
   execute: async (message: Message, args: string[]) => {
     try {
-      // Get user
+      // Get user from database
       const user = await storage.getUserByDiscordId(message.author.id);
+      
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Oyunda henüz bir profil oluşturmamışsınız. Takım seçmek için `.yap takim` komutunu kullanabilirsiniz.');
       }
       
-      // Check if user has a team
-      const hasTeam = await checkUserTeam(user, message);
-      if (!hasTeam) return;
-      
-      // Get team info
-      const team = await storage.getTeamByName(user.currentTeam as string);
-      if (!team) {
-        return message.reply('Takım bilgisi bulunamadı.');
-      }
-      
-      // Create status embed
-      const statusEmbed = new MessageEmbed()
-        .setColor('#5865F2')
-        .setTitle(`📊 Teknik Direktör ve Takım Durumu`)
-        .setDescription(`**${user.username}** - **${team.name}** teknik direktörü`)
-        .setFooter({ text: `Son güncelleme: ${formatTimestamp(new Date())}` });
-      
-      // Add coach stats
-      statusEmbed.addField(
-        '👔 Teknik Direktör Bilgileri',
-        `**İsim:** ${user.username}\n` +
-        `**Göreve Başlama:** ${formatTimestamp(new Date(user.createdAt), 'date')}\n` +
-        `**Puan:** ${user.points || 0}\n` +
-        `**Unvanlar:** ${user.titles ? JSON.stringify(user.titles) : 'Henüz unvan kazanılmadı'}\n`,
-        false
-      );
-      
-      // Add team performance
-      statusEmbed.addField(
-        '⚽ Takım Performansı',
-        `**Taraftar Desteği:** ${getStatBar(user.fanSupport, 100)}\n` +
-        `**Yönetim Güveni:** ${getStatBar(user.managementTrust, 100)}\n` +
-        `**Takım Morali:** ${getStatBar(user.teamMorale, 100)}\n`,
-        false
-      );
-      
-      // Add memory stats
-      statusEmbed.addField(
-        '💾 Hafıza Veritabanı Durumu',
-        `**Kullanıcı Sayısı:** ${await getUserCount()}\n` +
-        `**Takım Sayısı:** ${await getTeamCount()}\n` +
-        `**Oyuncu Sayısı:** ${await getPlayerCount()}\n` +
-        `**Aktif Oturum Sayısı:** ${await getActiveSessionCount()}\n`,
-        false
-      );
-      
-      // Send the embed
-      return message.reply({ embeds: [statusEmbed] });
+      // Create the status embed
+      const statusEmbed = await createStatusEmbed(user, message);
+      message.channel.send({ embeds: [statusEmbed] });
       
     } catch (error) {
-      console.error('Error in durum command:', error);
-      message.reply('Durum gösterimi sırasında bir hata oluştu.');
+      console.error('Durum komutu hatası:', error);
+      message.reply('Durum bilgileriniz alınırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
     }
   }
 };
 
-// Helper function to generate a stat bar
+async function createStatusEmbed(user: User, message: Message): Promise<MessageEmbed> {
+  // Get user's team
+  let team: Team | undefined;
+  let teamTraits: any = null;
+  
+  if (user.currentTeam) {
+    team = await storage.getTeamByName(user.currentTeam);
+    if (team) {
+      teamTraits = getTeamTraits(team.traitType);
+    }
+  }
+  
+  // Calculate stats
+  const userRank = await calculateUserRank(user);
+  const activeSessionCount = await getActiveSessionCount(user.id);
+  const totalSessionsCompleted = await getCompletedSessionCount(user.id);
+  const statBars = await createStatBars(user);
+  
+  // Create embed
+  const embed = new MessageEmbed()
+    .setColor('#3498db')
+    .setTitle(`${user.username} | Menajer Durumu`)
+    .setDescription(`${user.currentTeam ? `**${user.currentTeam}** takımının teknik direktörü` : 'Henüz bir takım seçmemiş'}`)
+    .setThumbnail(message.author.displayAvatarURL())
+    .addField('📊 Genel İstatistikler', 
+      `🏆 **Puan:** ${user.points || 0}\n` +
+      `👑 **Sıralama:** ${userRank}\n` +
+      `🕒 **Kayıt Tarihi:** ${formatTimestamp(new Date(user.createdAt), 'date')}\n` +
+      `📝 **Tamamlanan Etkinlikler:** ${totalSessionsCompleted}\n` +
+      `⚡ **Aktif Oturumlar:** ${activeSessionCount}`
+    )
+    .addField('📈 Performans Metrikleri', statBars)
+    .setFooter({ text: 'Teknik Direktör Kariyer Durumu' })
+    .setTimestamp();
+    
+  // Add earned titles if any
+  if (user.titles && Array.isArray(user.titles) && user.titles.length > 0) {
+    embed.addField('🏅 Kazanılan Unvanlar', user.titles.join('\n'));
+  }
+  
+  // Add team specifics if available
+  if (team && teamTraits) {
+    embed.addField(`⚽ ${team.name} Takım Bilgileri`, 
+      `**Takım Profili:** ${teamTraits.description}\n` +
+      `**Medya Baskısı:** ${getRiskLevel(teamTraits.mediaPressure)}\n` +
+      `**Taraftar Beklentisi:** ${getRiskLevel(teamTraits.fanExpectations)}\n` +
+      `**Yönetim Sabrı:** ${getRiskLevel(teamTraits.managementPatience)}`
+    );
+  }
+  
+  return embed;
+}
+
+async function calculateUserRank(user: User): Promise<string> {
+  try {
+    const allUsers = await storage.getAllUsers();
+    
+    // Sort users by points in descending order
+    const sortedUsers = allUsers.sort((a, b) => {
+      return (b.points || 0) - (a.points || 0);
+    });
+    
+    // Find current user's rank
+    const rank = sortedUsers.findIndex(u => u.id === user.id) + 1;
+    return `${rank}/${sortedUsers.length}`;
+  } catch (error) {
+    console.error('Sıralama hesaplanırken hata:', error);
+    return 'Hesaplanamadı';
+  }
+}
+
+async function getActiveSessionCount(userId: number): Promise<number> {
+  try {
+    const allSessions = await storage.getAllGameSessions();
+    return allSessions.filter((session: GameSession) => 
+      session.userId === userId && session.isActive === true
+    ).length;
+  } catch (error) {
+    console.error('Aktif oturum sayısı hesaplanırken hata:', error);
+    return 0;
+  }
+}
+
+async function getCompletedSessionCount(userId: number): Promise<number> {
+  try {
+    const allSessions = await storage.getAllGameSessions();
+    return allSessions.filter((session: GameSession) => 
+      session.userId === userId && session.isActive === false
+    ).length;
+  } catch (error) {
+    console.error('Tamamlanan oturum sayısı hesaplanırken hata:', error);
+    return 0;
+  }
+}
+
+async function createStatBars(user: User): Promise<string> {
+  const fanSupport = user.fanSupport || 50;
+  const managementTrust = user.managementTrust || 50;  
+  const teamMorale = user.teamMorale || 50;
+  
+  return `**Taraftar Desteği:** ${getStatBar(fanSupport, 100)}\n` +
+         `**Yönetim Güveni:** ${getStatBar(managementTrust, 100)}\n` +
+         `**Takım Morali:** ${getStatBar(teamMorale, 100)}`;
+}
+
 function getStatBar(value: number | null, max: number): string {
-  if (value === null) value = 50; // Default value
+  if (value === null) return 'Hesaplanamadı';
   
-  const percentage = Math.max(0, Math.min(100, Math.round((value / max) * 100)));
-  const fullBlocks = Math.floor(percentage / 10);
+  const filledSquares = Math.round((value / max) * 10);
+  const emptySquares = 10 - filledSquares;
   
-  let bar = '';
-  for (let i = 0; i < 10; i++) {
-    bar += i < fullBlocks ? '■' : '□';
+  const filled = '■'.repeat(filledSquares);
+  const empty = '□'.repeat(emptySquares);
+  
+  let color = '🟨';  // Default yellow
+  if (value >= 70) color = '🟩';  // Green for high
+  if (value <= 30) color = '🟥';  // Red for low
+  
+  return `${color} ${filled}${empty} ${value}%`;
+}
+
+function getRiskLevel(risk: 'low' | 'medium' | 'high'): string {
+  switch (risk) {
+    case 'low': return '🟢 Düşük';
+    case 'medium': return '🟠 Orta';
+    case 'high': return '🔴 Yüksek';
+    default: return '⚪ Belirsiz';
   }
-  
-  return `${bar} ${percentage}%`;
-}
-
-// Helper functions to get database stats
-async function getUserCount(): Promise<number> {
-  const allUsers = await storage.getAllUsers();
-  return allUsers.length;
-}
-
-async function getTeamCount(): Promise<number> {
-  const allTeams = await storage.getAllTeams();
-  return allTeams.length;
-}
-
-async function getPlayerCount(): Promise<number> {
-  const allTeams = await storage.getAllTeams();
-  let playerCount = 0;
-  
-  for (const team of allTeams) {
-    const players = await storage.getPlayersByTeamId(team.id);
-    playerCount += players.length;
-  }
-  
-  return playerCount;
-}
-
-async function getActiveSessionCount(): Promise<number> {
-  const allSessions = await storage.getAllGameSessions();
-  return allSessions.filter(session => session.isActive).length;
 }

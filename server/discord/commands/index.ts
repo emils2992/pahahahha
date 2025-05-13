@@ -8,6 +8,7 @@ import { takimCommand } from './takim';
 import { bültenCommand } from './bülten';
 import { helpCommand } from './help';
 import { durumCommand } from './durum';
+import { ekleCommand } from './ekle';
 
 // Collection to store all commands
 export const commands = new Collection();
@@ -29,3 +30,4 @@ commands.set('bülten', bültenCommand);
 commands.set('help', helpCommand);
 commands.set('yardım', helpCommand); // Turkish alternative for help
 commands.set('durum', durumCommand);
+commands.set('ekle', ekleCommand);

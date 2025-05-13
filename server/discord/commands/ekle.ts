@@ -1,0 +1,201 @@
+import { Message, MessageEmbed, MessageActionRow, MessageButton } from 'discord.js';
+import { storage } from '../../storage';
+import { User, Team, Player, InsertPlayer } from '@shared/schema';
+import { formatTimestamp } from '../utils/helpers';
+
+// Premier Lig takımları
+const premierLeagueTeams = [
+  'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton', 
+  'Chelsea', 'Crystal Palace', 'Everton', 'Fulham', 'Leicester', 
+  'Liverpool', 'Manchester City', 'Manchester United', 'Newcastle', 
+  'Nottingham Forest', 'Southampton', 'Tottenham', 'West Ham', 'Wolves', 'Leeds'
+];
+
+// Oyuncu pozisyonları
+const positions = ['Kaleci', 'Defans', 'Orta Saha', 'Forvet'];
+
+export const ekleCommand = {
+  name: 'ekle',
+  description: 'Takıma yeni oyuncu ekler (Sadece Yetkililer)',
+  usage: '.yap ekle [takım adı] [oyuncu bilgileri]',
+  category: 'yönetim',
+  execute: async (message: Message, args: string[]) => {
+    // Yetki kontrolü
+    if (!message.member?.permissions.has('ADMINISTRATOR') && 
+        !message.member?.permissions.has('MANAGE_GUILD') &&
+        !message.member?.roles.cache.some(role => 
+          role.name.toLowerCase().includes('mod') || 
+          role.name.toLowerCase().includes('admin') || 
+          role.name.toLowerCase().includes('yetkili'))) {
+      return message.reply('Bu komutu kullanmak için yönetici yetkisine sahip olmanız gerekiyor!');
+    }
+    try {
+      // Kullanıcı kontrolü
+      const user = await storage.getUserByDiscordId(message.author.id);
+      if (!user) {
+        return message.reply('Önce bir takım seçmelisiniz. `.yap takim` komutunu kullanın.');
+      }
+      
+      // Argüman kontrolü
+      if (args.length === 0) {
+        return sendTeamSelectionEmbed(message);
+      }
+      
+      // Takım adı belirtilmişse
+      const teamName = args[0];
+      const team = await storage.getTeamByName(teamName);
+      
+      if (!team) {
+        return message.reply(`"${teamName}" adında bir takım bulunamadı. Doğru yazdığınızdan emin olun.`);
+      }
+      
+      if (args.length === 1) {
+        // Sadece takım adı belirtilmiş, oyuncu ekleme formunu göster
+        return showPlayerAddForm(message, team);
+      }
+      
+      // Takım ve oyuncu bilgileri belirtilmiş
+      if (args.length >= 3) {
+        const playerName = args[1];
+        const position = determinePosition(args[2]);
+        const jerseyNumber = Math.floor(Math.random() * 99) + 1; // 1-99 arası rastgele forma numarası
+        
+        // Oyuncu ekle
+        await addPlayerToTeam(message, team, playerName, position, jerseyNumber);
+      } else {
+        message.reply('Oyuncu eklemek için: `.yap ekle [takım adı] [oyuncu adı] [pozisyon]`');
+      }
+      
+    } catch (error) {
+      console.error('Oyuncu ekleme hatası:', error);
+      message.reply('Oyuncu eklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+    }
+  }
+};
+
+// Takım seçim ekranı
+async function sendTeamSelectionEmbed(message: Message): Promise<void> {
+  try {
+    const teams = await storage.getAllTeams();
+    
+    // Takımları 5'li gruplar halinde ayır (Discord'da embed'lerde en fazla 25 alan olabilir)
+    const teamGroups = [];
+    for (let i = 0; i < teams.length; i += 5) {
+      teamGroups.push(teams.slice(i, i + 5));
+    }
+    
+    const embed = new MessageEmbed()
+      .setColor('#3498db')
+      .setTitle('Oyuncu Eklemek İstediğiniz Takımı Seçin')
+      .setDescription('Aşağıdaki takımlardan birine oyuncu eklemek için: `.yap ekle [takım adı]`')
+      .setFooter({ text: 'Transfer Penceresi' });
+    
+    // Takımları ekle
+    teamGroups.forEach((group, index) => {
+      const teamNames = group.map(team => team.name).join('\n');
+      embed.addField(`Takımlar - Grup ${index + 1}`, teamNames, true);
+    });
+    
+    message.channel.send({ embeds: [embed] });
+  } catch (error) {
+    console.error('Takım seçim hatası:', error);
+    message.reply('Takım listesi alınırken bir hata oluştu.');
+  }
+}
+
+// Oyuncu ekleme formu
+async function showPlayerAddForm(message: Message, team: Team): Promise<void> {
+  const embed = new MessageEmbed()
+    .setColor('#2ecc71')
+    .setTitle(`${team.name} - Yeni Oyuncu Ekleme`)
+    .setDescription('Yeni bir oyuncu eklemek için aşağıdaki komutu kullanın:')
+    .addField('Komut', `\`.yap ekle ${team.name} [oyuncu adı] [pozisyon]\``)
+    .addField('Örnek', `\`.yap ekle ${team.name} Messi Forvet\``)
+    .addField('Pozisyonlar', positions.join(', '))
+    .addField('Mevcut Oyuncular', await getTeamPlayersList(team.id))
+    .setFooter({ text: 'Transfer Penceresi' });
+    
+  message.channel.send({ embeds: [embed] });
+}
+
+// Takımın mevcut oyuncularını getir
+async function getTeamPlayersList(teamId: number): Promise<string> {
+  try {
+    const players = await storage.getPlayersByTeamId(teamId);
+    
+    if (players.length === 0) {
+      return "Henüz oyuncu yok";
+    }
+    
+    return players.map(player => 
+      `${player.name} (${player.position}) - #${player.jerseyNumber}`
+    ).join('\n');
+  } catch (error) {
+    console.error('Oyuncu listesi hatası:', error);
+    return "Oyuncu listesi alınamadı";
+  }
+}
+
+// Pozisyon belirleme
+function determinePosition(positionInput: string): string {
+  const input = positionInput.toLowerCase();
+  
+  if (input.includes('kaleci') || input.includes('keeper') || input.includes('gk')) {
+    return 'Kaleci';
+  } else if (input.includes('defans') || input.includes('defender') || input.includes('def')) {
+    return 'Defans';
+  } else if (input.includes('orta') || input.includes('midfielder') || input.includes('mid')) {
+    return 'Orta Saha';
+  } else if (input.includes('forvet') || input.includes('forward') || input.includes('striker')) {
+    return 'Forvet';
+  }
+  
+  // Eşleşme bulunamadıysa, varsayılan olarak 'Orta Saha' döndür
+  return 'Orta Saha';
+}
+
+// Takıma oyuncu ekleme
+async function addPlayerToTeam(
+  message: Message, 
+  team: Team, 
+  playerName: string, 
+  position: string, 
+  jerseyNumber: number
+): Promise<void> {
+  try {
+    // Yeni oyuncu oluştur
+    const newPlayer: InsertPlayer = {
+      name: playerName,
+      position: position,
+      jerseyNumber: jerseyNumber,
+      teamId: team.id,
+      mood: 70 // Yeni transfer olduğu için morali yüksek
+    };
+    
+    // Oyuncuyu veritabanına ekle
+    const player = await storage.createPlayer(newPlayer);
+    
+    // Başarılı mesajı gönder
+    const embed = new MessageEmbed()
+      .setColor('#2ecc71')
+      .setTitle('Transfer Başarılı!')
+      .setDescription(`**${player.name}** artık **${team.name}** kadrosunda!`)
+      .addField('Pozisyon', player.position)
+      .addField('Forma Numarası', `#${player.jerseyNumber}`)
+      .addField('Transfer Tarihi', formatTimestamp(new Date(), 'date'))
+      .setFooter({ text: 'Transfer Penceresi' });
+      
+    message.channel.send({ embeds: [embed] });
+    
+    // Kullanıcının takımı ise, takım moralini biraz yükselt
+    const user = await storage.getUserByDiscordId(message.author.id);
+    if (user && user.currentTeam === team.name) {
+      await storage.updateUserStats(user.discordId, 0, 0, 5);
+      message.channel.send('Başarılı transferden dolayı takım morali yükseldi! 📈');
+    }
+    
+  } catch (error) {
+    console.error('Oyuncu ekleme hatası:', error);
+    message.reply('Oyuncu eklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+  }
+}

@@ -78,6 +78,7 @@ export type GameSession = typeof gameSessions.$inferSelect;
 // Type for press conference results
 export type PressConferenceResult = {
   fanSupportChange: number;
+  managementTrustChange: number;
   mediaComment: string;
   managementReaction: string;
   gossip?: string;
@@ -117,4 +118,13 @@ export type Formation = {
   name: string;
   positions: string[];
   mediaAnalysis: string[];
+};
+
+// Type for press conference questions
+export type PressQuestion = {
+  question: string;
+  context: string;
+  category: 'tactical' | 'player' | 'rival' | 'result' | 'club' | 'general';
+  positiveKeywords: string[];
+  negativeKeywords: string[];
 };

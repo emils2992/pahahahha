@@ -261,32 +261,43 @@ export class MemStorage implements IStorage {
   // Initialize with default teams
   private initializeDefaultTeams() {
     const defaultTeams = [
-      // Premier League with club emojis
-      { name: "🔴 Arsenal", traitType: "sansasyonel", players: [] },
-      { name: "🟣 Aston Villa", traitType: "kurumsal", players: [] },
-      { name: "⚫ AFC Bournemouth", traitType: "kurumsal", players: [] },
-      { name: "🐝 Brentford", traitType: "kurumsal", players: [] },
-      { name: "🕊️ Brighton & Hove Albion", traitType: "kurumsal", players: [] },
-      { name: "🟤 Burnley", traitType: "kurumsal", players: [] },
-      { name: "🔵 Chelsea", traitType: "çalkantılı", players: [] },
-      { name: "🦅 Crystal Palace", traitType: "kurumsal", players: [] },
-      { name: "⛪ Everton", traitType: "çalkantılı", players: [] },
-      { name: "⚪ Fulham", traitType: "kurumsal", players: [] },
-      { name: "🟡 Leeds United", traitType: "kurumsal", players: [] },
-      { name: "❤️ Liverpool", traitType: "sansasyonel", players: [] },
-      { name: "💠 Manchester City", traitType: "sansasyonel", players: [] },
-      { name: "🔴 Manchester United", traitType: "sansasyonel", players: [] },
-      { name: "⚫ Newcastle United", traitType: "çalkantılı", players: [] },
-      { name: "🌲 Nottingham Forest", traitType: "kurumsal", players: [] },
-      { name: "🐓 Tottenham Hotspur", traitType: "çalkantılı", players: [] },
-      { name: "⚒️ West Ham United", traitType: "kurumsal", players: [] },
-      { name: "🐺 Wolverhampton Wanderers", traitType: "kurumsal", players: [] },
-      { name: "⚓ Southampton", traitType: "kurumsal", players: [] },
+      // Premier League teams (2025-2026 season projection)
+      { name: "Arsenal", traitType: "sansasyonel", players: [] },
+      { name: "Aston Villa", traitType: "kurumsal", players: [] },
+      { name: "Bournemouth", traitType: "kurumsal", players: [] },
+      { name: "Brentford", traitType: "kurumsal", players: [] },
+      { name: "Brighton", traitType: "kurumsal", players: [] },
+      { name: "Chelsea", traitType: "çalkantılı", players: [] },
+      { name: "Crystal Palace", traitType: "kurumsal", players: [] },
+      { name: "Everton", traitType: "çalkantılı", players: [] },
+      { name: "Fulham", traitType: "kurumsal", players: [] },
+      { name: "Leeds", traitType: "kurumsal", players: [] },
+      { name: "Leicester", traitType: "kurumsal", players: [] },
+      { name: "Liverpool", traitType: "sansasyonel", players: [] },
+      { name: "Manchester City", traitType: "sansasyonel", players: [] },
+      { name: "Manchester United", traitType: "sansasyonel", players: [] },
+      { name: "Newcastle", traitType: "çalkantılı", players: [] },
+      { name: "Nottingham Forest", traitType: "kurumsal", players: [] },
+      { name: "Tottenham", traitType: "çalkantılı", players: [] },
+      { name: "West Ham", traitType: "kurumsal", players: [] },
+      { name: "Wolves", traitType: "kurumsal", players: [] },
+      { name: "Southampton", traitType: "kurumsal", players: [] },
     ];
     
     defaultTeams.forEach(team => {
       const id = this.teamIdCounter++;
       this.teams.set(id, { ...team, id });
+    });
+    
+    // Takım oyuncularını oluştur
+    import('../discord/data/teams').then(module => {
+      if (module.initializeTeamPlayers) {
+        module.initializeTeamPlayers().catch(err => {
+          console.error('Takım oyuncuları oluşturulurken hata:', err);
+        });
+      }
+    }).catch(err => {
+      console.error('Takım modülü yüklenirken hata:', err);
     });
   }
 }
