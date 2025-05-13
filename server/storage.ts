@@ -222,12 +222,72 @@ export class MemStorage implements IStorage {
         teamOwnershipIdCounter: number;
       };
       
+      // Veri yapılarını temizle ve sonra yükle
+      this.users.clear();
+      this.teams.clear();
+      this.players.clear();
+      this.gameSessions.clear();
+      this.teamOwnerships.clear();
+      
       // Map veri yapılarını oluştur
-      this.users = new Map(usersData.map(user => [user.id, user]));
-      this.teams = new Map(teamsData.map(team => [team.id, team]));
-      this.players = new Map(playersData.map(player => [player.id, player]));
-      this.gameSessions = new Map(gameSessionsData.map(session => [session.id, session]));
-      this.teamOwnerships = new Map(teamOwnershipsData.map(ownership => [ownership.id, ownership]));
+      for (const user of usersData) {
+        // null değerler yerine varsayılan değerler atayalım
+        const processedUser: User = {
+          id: user.id,
+          discordId: user.discordId,
+          username: user.username,
+          currentTeam: user.currentTeam || null,
+          fanSupport: user.fanSupport !== null && user.fanSupport !== undefined ? user.fanSupport : 50,
+          managementTrust: user.managementTrust !== null && user.managementTrust !== undefined ? user.managementTrust : 50,
+          teamMorale: user.teamMorale !== null && user.teamMorale !== undefined ? user.teamMorale : 50,
+          titles: Array.isArray(user.titles) ? user.titles : [],
+          points: user.points !== null && user.points !== undefined ? user.points : 0,
+          monthlyPoints: user.monthlyPoints !== null && user.monthlyPoints !== undefined ? user.monthlyPoints : 0,
+          lastPointReset: user.lastPointReset || new Date().toISOString(), 
+          lastActionTime: user.lastActionTime || {},
+          seasonRecords: user.seasonRecords || {},
+          createdAt: user.createdAt
+        };
+        this.users.set(user.id, processedUser);
+      }
+      
+      for (const team of teamsData) {
+        const processedTeam: Team = {
+          id: team.id,
+          name: team.name,
+          traitType: team.traitType,
+          players: team.players || []
+        };
+        this.teams.set(team.id, processedTeam);
+      }
+      
+      for (const player of playersData) {
+        const processedPlayer: Player = {
+          id: player.id,
+          name: player.name,
+          position: player.position,
+          jerseyNumber: player.jerseyNumber,
+          teamId: player.teamId,
+          mood: player.mood !== null && player.mood !== undefined ? player.mood : 50
+        };
+        this.players.set(player.id, processedPlayer);
+      }
+      
+      for (const session of gameSessionsData) {
+        const processedSession: GameSession = {
+          id: session.id,
+          createdAt: session.createdAt,
+          userId: session.userId,
+          sessionType: session.sessionType,
+          sessionData: session.sessionData || {},
+          isActive: session.isActive !== null && session.isActive !== undefined ? session.isActive : false
+        };
+        this.gameSessions.set(session.id, processedSession);
+      }
+      
+      for (const ownership of teamOwnershipsData) {
+        this.teamOwnerships.set(ownership.id, ownership);
+      }
       
       // Sayaçları yükle
       this.userIdCounter = counters.userIdCounter;
@@ -236,7 +296,11 @@ export class MemStorage implements IStorage {
       this.gameSessionIdCounter = counters.gameSessionIdCounter;
       this.teamOwnershipIdCounter = counters.teamOwnershipIdCounter;
       
-      console.log('Veriler başarıyla yüklendi.');
+      // Kontrol amaçlı bilgileri yazdıralım
+      const loadedUserCount = this.users.size;
+      const loadedTeamCount = this.teams.size;
+      const loadedTeamOwnershipCount = this.teamOwnerships.size;
+      console.log(`Veriler başarıyla yüklendi: ${loadedUserCount} kullanıcı, ${loadedTeamCount} takım, ${loadedTeamOwnershipCount} takım sahipliği.`);
       return true;
     } catch (error) {
       console.error('Veri yüklenirken hata oluştu:', error);
