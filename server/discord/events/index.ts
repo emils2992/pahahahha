@@ -17,7 +17,15 @@ export function handleMessageCreate(client: Client) {
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const commandName = args.shift()?.toLowerCase();
     
-    if (!commandName) return;
+    // If only prefix is given without command, show help
+    if (!commandName) {
+      // Get help command and execute it
+      const helpCommand = commands.get('help');
+      if (helpCommand) {
+        return helpCommand.execute(message, []);
+      }
+      return;
+    }
     
     // Get command from collection
     const command = commands.get(commandName);

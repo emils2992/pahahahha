@@ -6,6 +6,7 @@ import { dedikoduCommand, sızdırCommand } from './medya';
 import { yalanMakinesiCommand, hakemCommand, taraftarCommand, şampiyonlukSozuCommand } from './minigames';
 import { takimCommand } from './takim';
 import { bültenCommand } from './bülten';
+import { helpCommand } from './help';
 
 // Collection to store all commands
 export const commands = new Collection();
@@ -24,3 +25,5 @@ commands.set('taraftar', taraftarCommand);
 commands.set('şampiyonluksozu', şampiyonlukSozuCommand); 
 commands.set('takim', takimCommand);
 commands.set('bülten', bültenCommand);
+commands.set('help', helpCommand);
+commands.set('yardım', helpCommand); // Turkish alternative for help

@@ -228,14 +228,27 @@ export class MemStorage implements IStorage {
   // Initialize with default teams
   private initializeDefaultTeams() {
     const defaultTeams = [
-      { name: "Galatasaray", traitType: "sansasyonel", players: [] },
-      { name: "Fenerbahçe", traitType: "çalkantılı", players: [] },
-      { name: "Beşiktaş", traitType: "kurumsal", players: [] },
-      { name: "Trabzonspor", traitType: "kurumsal", players: [] },
-      { name: "Başakşehir", traitType: "kurumsal", players: [] },
-      { name: "Konyaspor", traitType: "kurumsal", players: [] },
-      { name: "Adana Demirspor", traitType: "çalkantılı", players: [] },
-      { name: "Antalyaspor", traitType: "kurumsal", players: [] },
+      // Premier League with club emojis
+      { name: "🔴 Arsenal", traitType: "sansasyonel", players: [] },
+      { name: "🟣 Aston Villa", traitType: "kurumsal", players: [] },
+      { name: "⚫ AFC Bournemouth", traitType: "kurumsal", players: [] },
+      { name: "🐝 Brentford", traitType: "kurumsal", players: [] },
+      { name: "🕊️ Brighton & Hove Albion", traitType: "kurumsal", players: [] },
+      { name: "🟤 Burnley", traitType: "kurumsal", players: [] },
+      { name: "🔵 Chelsea", traitType: "çalkantılı", players: [] },
+      { name: "🦅 Crystal Palace", traitType: "kurumsal", players: [] },
+      { name: "⛪ Everton", traitType: "çalkantılı", players: [] },
+      { name: "⚪ Fulham", traitType: "kurumsal", players: [] },
+      { name: "🟡 Leeds United", traitType: "kurumsal", players: [] },
+      { name: "❤️ Liverpool", traitType: "sansasyonel", players: [] },
+      { name: "💠 Manchester City", traitType: "sansasyonel", players: [] },
+      { name: "🔴 Manchester United", traitType: "sansasyonel", players: [] },
+      { name: "⚫ Newcastle United", traitType: "çalkantılı", players: [] },
+      { name: "🌲 Nottingham Forest", traitType: "kurumsal", players: [] },
+      { name: "🐓 Tottenham Hotspur", traitType: "çalkantılı", players: [] },
+      { name: "⚒️ West Ham United", traitType: "kurumsal", players: [] },
+      { name: "🐺 Wolverhampton Wanderers", traitType: "kurumsal", players: [] },
+      { name: "⚓ Southampton", traitType: "kurumsal", players: [] },
     ];
     
     defaultTeams.forEach(team => {
