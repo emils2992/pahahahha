@@ -219,12 +219,17 @@ export const sızdırCommand = {
             selectedGossip.impact.teamMorale
           );
           
+          // Calculate updated stats with null safety
+          const fanSupport = typeof user.fanSupport === 'number' ? user.fanSupport : 0;
+          const managementTrust = typeof user.managementTrust === 'number' ? user.managementTrust : 0;
+          const teamMorale = typeof user.teamMorale === 'number' ? user.teamMorale : 0;
+          
           // Create result embed
           const resultEmbed = createLeakResultEmbed(
             selectedGossip,
-            user.fanSupport + selectedGossip.impact.fanSupport,
-            user.managementTrust + selectedGossip.impact.managementTrust,
-            user.teamMorale + selectedGossip.impact.teamMorale
+            fanSupport + selectedGossip.impact.fanSupport,
+            managementTrust + selectedGossip.impact.managementTrust,
+            teamMorale + selectedGossip.impact.teamMorale
           );
           
           // Send the result

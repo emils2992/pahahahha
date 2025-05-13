@@ -140,13 +140,18 @@ export const kararCommand = {
         await storage.endGameSession(session.id);
         
         // Show result
+        // Calculate updated stats with null safety
+        const fanSupport = typeof user.fanSupport === 'number' ? user.fanSupport : 0;
+        const managementTrust = typeof user.managementTrust === 'number' ? user.managementTrust : 0;
+        const teamMorale = typeof user.teamMorale === 'number' ? user.teamMorale : 0;
+        
         const resultEmbed = createDecisionResultEmbed(
           decision,
           selectedOption,
           result,
-          (user.fanSupport || 0) + result.fanSupportChange,
-          (user.managementTrust || 0) + result.managementTrustChange,
-          (user.teamMorale || 0) + result.teamMoraleChange
+          fanSupport + result.fanSupportChange,
+          managementTrust + result.managementTrustChange,
+          teamMorale + result.teamMoraleChange
         );
         
         await interaction.update({
