@@ -24,7 +24,7 @@ import {
 export const basinCommand = {
   name: 'basın',
   description: 'Basın toplantısı düzenle',
-  usage: '.yap basın [önce|sonra] [hoca adı]',
+  usage: '.basın [önce|sonra] [hoca adı]',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get or create user

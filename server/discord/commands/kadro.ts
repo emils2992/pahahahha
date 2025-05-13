@@ -13,13 +13,13 @@ import { checkUserTeam, createTutorialEmbed } from '../utils/helpers';
 export const taktikCommand = {
   name: 'taktik',
   description: 'Taktik formasyonu belirle',
-  usage: '.yap taktik [formasyon]',
+  usage: '.taktik [formasyon]',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get user
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.takim [takım adı]`');
       }
       
       // Check if user has a team
@@ -31,8 +31,8 @@ export const taktikCommand = {
           embeds: [
             createTutorialEmbed(
               'Taktik Belirleme Yardımı',
-              '**Kullanım:** `.yap taktik [formasyon]` veya `.yap taktik`\n\n' +
-              '**Örnek:** `.yap taktik 4-3-3`\n\n' +
+              '**Kullanım:** `.taktik [formasyon]` veya `.taktik`\n\n' +
+              '**Örnek:** `.taktik 4-3-3`\n\n' +
               '**Açıklama:** Takımınızın taktik formasyonunu belirlersiniz.\n' +
               'Eğer bir formasyon belirtmezseniz, seçim için liste gösterilir.\n\n' +
               '**Formasyonlar:** 4-4-2, 4-3-3, 4-2-3-1, 3-5-2, 3-4-3, 5-3-2'
