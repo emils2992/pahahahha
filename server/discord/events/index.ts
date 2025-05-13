@@ -7,15 +7,41 @@ export function handleMessageCreate(client: Client) {
     // Ignore bot messages
     if (message.author.bot) return;
     
-    // Command prefixes - both .h and .yap are supported for backwards compatibility
-    const prefixes = ['.h', '.yap'];
+    // Command prefixes - both direct commands with "." and full form with ".h" are supported
+    const fullPrefix = '.h';
+    const directPrefix = '.';
     
-    // Check if message starts with any of the prefixes
-    const usedPrefix = prefixes.find(p => message.content.startsWith(p));
-    if (!usedPrefix) return;
+    // Check for direct command (like .durum)
+    if (message.content.startsWith(directPrefix)) {
+      // Skip the full prefix version to avoid duplicate handling
+      if (message.content.startsWith(fullPrefix)) {
+        // Handle with full prefix below
+      } else {
+        // This is a direct command like ".durum"
+        const command = message.content.slice(directPrefix.length).split(/ +/)[0].toLowerCase();
+        const restArgs = message.content.slice(directPrefix.length + command.length).trim().split(/ +/);
+        
+        // Get command from collection
+        const cmdObj = commands.get(command);
+        if (cmdObj) {
+          try {
+            await cmdObj.execute(message, restArgs);
+          } catch (error) {
+            console.error(`Error executing direct command "${command}":`, error);
+            message.reply({
+              content: 'Komut çalıştırılırken bir hata oluştu.'
+            });
+          }
+          return;
+        }
+      }
+    }
+    
+    // Check for full prefix (.h command)
+    if (!message.content.startsWith(fullPrefix)) return;
     
     // Parse command and arguments
-    const args = message.content.slice(usedPrefix.length).trim().split(/ +/);
+    const args = message.content.slice(fullPrefix.length).trim().split(/ +/);
     const commandName = args.shift()?.toLowerCase();
     
     // If only prefix is given without command, show help
