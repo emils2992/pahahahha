@@ -113,8 +113,122 @@ export class MemStorage implements IStorage {
     this.gameSessionIdCounter = 1;
     this.teamOwnershipIdCounter = 1;
     
-    // Initialize with some default teams
-    this.initializeDefaultTeams();
+    // Try to load data from storage
+    const dataLoaded = this.loadData();
+    
+    // If no data was loaded or teams are missing, initialize default teams
+    if (!dataLoaded || this.teams.size === 0) {
+      this.initializeDefaultTeams();
+      // Save initial data to files
+      this.saveData();
+    }
+    
+    // Set up auto-save every 5 minutes
+    setInterval(() => {
+      this.saveData();
+    }, 5 * 60 * 1000);
+    
+    // Save data on process termination
+    process.on('SIGINT', () => {
+      console.log('Uygulama kapatılıyor, veriler kaydediliyor...');
+      this.saveData();
+      process.exit(0);
+    });
+  }
+  
+  // Veri kaydetme işlemi
+  private saveData(): void {
+    try {
+      // Klasör var mı kontrol et, yoksa oluştur
+      if (!fs.existsSync('./data')) {
+        fs.mkdirSync('./data', { recursive: true });
+      }
+      
+      // Veri yapılarını JSON dizilerine dönüştür
+      const usersData = Array.from(this.users.values());
+      const teamsData = Array.from(this.teams.values());
+      const playersData = Array.from(this.players.values());
+      const gameSessionsData = Array.from(this.gameSessions.values());
+      const teamOwnershipsData = Array.from(this.teamOwnerships.values());
+      
+      // Sayaçları dışa aktar
+      const counters = {
+        userIdCounter: this.userIdCounter,
+        teamIdCounter: this.teamIdCounter,
+        playerIdCounter: this.playerIdCounter,
+        gameSessionIdCounter: this.gameSessionIdCounter,
+        teamOwnershipIdCounter: this.teamOwnershipIdCounter
+      };
+      
+      // Dosyalara yaz
+      fs.writeFileSync('./data/users.json', JSON.stringify(usersData, null, 2));
+      fs.writeFileSync('./data/teams.json', JSON.stringify(teamsData, null, 2));
+      fs.writeFileSync('./data/players.json', JSON.stringify(playersData, null, 2));
+      fs.writeFileSync('./data/game_sessions.json', JSON.stringify(gameSessionsData, null, 2));
+      fs.writeFileSync('./data/team_ownerships.json', JSON.stringify(teamOwnershipsData, null, 2));
+      fs.writeFileSync('./data/counters.json', JSON.stringify(counters, null, 2));
+      
+      console.log('Veriler başarıyla kaydedildi.');
+    } catch (error) {
+      console.error('Veri kaydedilirken hata oluştu:', error);
+    }
+  }
+  
+  // Veri yükleme işlemi
+  private loadData(): boolean {
+    try {
+      // Gerekli tüm dosyaların varlığını kontrol et
+      const requiredFiles = [
+        './data/users.json',
+        './data/teams.json',
+        './data/players.json',
+        './data/game_sessions.json',
+        './data/team_ownerships.json',
+        './data/counters.json'
+      ];
+      
+      // Eğer bir dosya eksikse false döndür
+      for (const file of requiredFiles) {
+        if (!fs.existsSync(file)) {
+          console.log(`${file} bulunamadı, default veriler kullanılacak.`);
+          return false;
+        }
+      }
+      
+      // Dosyalardan veri yükle
+      const usersData = JSON.parse(fs.readFileSync('./data/users.json', 'utf8')) as User[];
+      const teamsData = JSON.parse(fs.readFileSync('./data/teams.json', 'utf8')) as Team[];
+      const playersData = JSON.parse(fs.readFileSync('./data/players.json', 'utf8')) as Player[];
+      const gameSessionsData = JSON.parse(fs.readFileSync('./data/game_sessions.json', 'utf8')) as GameSession[];
+      const teamOwnershipsData = JSON.parse(fs.readFileSync('./data/team_ownerships.json', 'utf8')) as TeamOwnership[];
+      const counters = JSON.parse(fs.readFileSync('./data/counters.json', 'utf8')) as {
+        userIdCounter: number;
+        teamIdCounter: number;
+        playerIdCounter: number;
+        gameSessionIdCounter: number;
+        teamOwnershipIdCounter: number;
+      };
+      
+      // Map veri yapılarını oluştur
+      this.users = new Map(usersData.map(user => [user.id, user]));
+      this.teams = new Map(teamsData.map(team => [team.id, team]));
+      this.players = new Map(playersData.map(player => [player.id, player]));
+      this.gameSessions = new Map(gameSessionsData.map(session => [session.id, session]));
+      this.teamOwnerships = new Map(teamOwnershipsData.map(ownership => [ownership.id, ownership]));
+      
+      // Sayaçları yükle
+      this.userIdCounter = counters.userIdCounter;
+      this.teamIdCounter = counters.teamIdCounter;
+      this.playerIdCounter = counters.playerIdCounter;
+      this.gameSessionIdCounter = counters.gameSessionIdCounter;
+      this.teamOwnershipIdCounter = counters.teamOwnershipIdCounter;
+      
+      console.log('Veriler başarıyla yüklendi.');
+      return true;
+    } catch (error) {
+      console.error('Veri yüklenirken hata oluştu:', error);
+      return false;
+    }
   }
   
   // User operations

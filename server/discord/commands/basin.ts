@@ -44,8 +44,8 @@ export const basinCommand = {
           embeds: [
             createTutorialEmbed(
               'Basın Toplantısı Yardımı',
-              '**Kullanım:** `.yap basın [önce|sonra] [hoca adı]`\n\n' +
-              '**Örnek:** `.yap basın önce Fatih Terim`\n\n' +
+              '**Kullanım:** `.basın [önce|sonra] [hoca adı]`\n\n' +
+              '**Örnek:** `.basın önce Fatih Terim`\n\n' +
               '**Açıklama:** Maç öncesi veya sonrası basın toplantısı simüle eder.\n' +
               'Sorulan sorulara verdiğiniz cevaplar; taraftar mutluluğunu, medya yorumlarını ve yönetim tepkisini etkiler.'
             )
