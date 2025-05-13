@@ -27,6 +27,22 @@ export const kararCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
+      // Kullanıcı yetkili mi kontrol et
+      const adminUserIds = ['1371879530020737214', '794205713533894696']; // Yetkili kullanıcı ID'leri
+      const isAdmin = adminUserIds.includes(message.author.id);
+      
+      // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
+      const canUseCommand = await storage.checkCommandTimeout(
+        user.discordId, 
+        "karar_command", 
+        360, // 6 saat = 360 dakika
+        isAdmin // Yetkili ise zaman kısıtlaması yok
+      );
+      
+      if (!canUseCommand) {
+        return message.reply('Karar komutunu kullanmak için 6 saat beklemelisiniz!');
+      }
+      
       // Check if there's already an active decision session
       const existingSession = await storage.getActiveSessionByUserId(user.id, 'karar');
       if (existingSession) {
@@ -128,9 +144,9 @@ export const kararCommand = {
           decision,
           selectedOption,
           result,
-          user.fanSupport + result.fanSupportChange,
-          user.managementTrust + result.managementTrustChange,
-          user.teamMorale + result.teamMoraleChange
+          (user.fanSupport || 0) + result.fanSupportChange,
+          (user.managementTrust || 0) + result.managementTrustChange,
+          (user.teamMorale || 0) + result.teamMoraleChange
         );
         
         await interaction.update({

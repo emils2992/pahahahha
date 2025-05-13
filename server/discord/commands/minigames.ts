@@ -25,11 +25,16 @@ export const yalanMakinesiCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
-      // 6 saat zaman kısıtlaması kontrol et
+      // Kullanıcı yetkili mi kontrol et
+      const adminUserIds = ['1371879530020737214', '794205713533894696']; // Yetkili kullanıcı ID'leri
+      const isAdmin = adminUserIds.includes(message.author.id);
+      
+      // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
       const canUseCommand = await storage.checkCommandTimeout(
         user.discordId, 
         "yalanmakinesi_command", 
-        360 // 6 saat = 360 dakika
+        360, // 6 saat = 360 dakika
+        isAdmin // Yetkili ise zaman kısıtlaması yok
       );
       
       if (!canUseCommand) {
@@ -140,8 +145,8 @@ export const hakemCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
-      // Kullanıcı yetkili mi kontrol et (yetkililerin ID'lerini burada belirle)
-      const adminUserIds = ['794205713533894696']; // Yetkili kullanıcı ID'lerini buraya ekle
+      // Kullanıcı yetkili mi kontrol et
+      const adminUserIds = ['1371879530020737214', '794205713533894696']; // Yetkili kullanıcı ID'leri
       const isAdmin = adminUserIds.includes(message.author.id);
       
       // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
@@ -304,8 +309,8 @@ export const taraftarCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
-      // Kullanıcı yetkili mi kontrol et (yetkililerin ID'lerini burada belirle)
-      const adminUserIds = ['794205713533894696']; // Yetkili kullanıcı ID'lerini buraya ekle
+      // Kullanıcı yetkili mi kontrol et
+      const adminUserIds = ['1371879530020737214', '794205713533894696']; // Yetkili kullanıcı ID'leri
       const isAdmin = adminUserIds.includes(message.author.id);
       
       // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
@@ -487,6 +492,22 @@ export const şampiyonlukSozuCommand = {
       // Check if user has a team
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
+      
+      // Kullanıcı yetkili mi kontrol et
+      const adminUserIds = ['1371879530020737214', '794205713533894696']; // Yetkili kullanıcı ID'leri
+      const isAdmin = adminUserIds.includes(message.author.id);
+      
+      // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
+      const canUseCommand = await storage.checkCommandTimeout(
+        user.discordId, 
+        "sampiyonluk_sozu_command", 
+        360, // 6 saat = 360 dakika
+        isAdmin // Yetkili ise zaman kısıtlaması yok
+      );
+      
+      if (!canUseCommand) {
+        return message.reply('Şampiyonluk sözü komutunu kullanmak için 6 saat beklemelisiniz!');
+      }
       
       // Check if user already made a promise
       const hasPromise = (user.seasonRecords as any)?.şampiyonlukSözü;

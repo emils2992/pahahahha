@@ -32,11 +32,16 @@ export const dedikoduCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
-      // 6 saat zaman kısıtlaması kontrol et
+      // Kullanıcı yetkili mi kontrol et
+      const adminUserIds = ['1371879530020737214', '794205713533894696']; // Yetkili kullanıcı ID'leri
+      const isAdmin = adminUserIds.includes(message.author.id);
+      
+      // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
       const canUseCommand = await storage.checkCommandTimeout(
         user.discordId, 
         "dedikodu_command", 
-        360 // 6 saat = 360 dakika
+        360, // 6 saat = 360 dakika
+        isAdmin // Yetkili ise zaman kısıtlaması yok
       );
       
       if (!canUseCommand) {
@@ -154,11 +159,16 @@ export const sızdırCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
-      // 6 saat zaman kısıtlaması kontrol et
+      // Kullanıcı yetkili mi kontrol et
+      const adminUserIds = ['1371879530020737214', '794205713533894696']; // Yetkili kullanıcı ID'leri
+      const isAdmin = adminUserIds.includes(message.author.id);
+      
+      // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
       const canUseCommand = await storage.checkCommandTimeout(
         user.discordId, 
         "sizdir_command", 
-        360 // 6 saat = 360 dakika
+        360, // 6 saat = 360 dakika
+        isAdmin // Yetkili ise zaman kısıtlaması yok
       );
       
       if (!canUseCommand) {
