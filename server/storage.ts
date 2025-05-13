@@ -142,9 +142,27 @@ export class MemStorage implements IStorage {
   }
   
   async getTeamByName(name: string): Promise<Team | undefined> {
-    return Array.from(this.teams.values()).find(
+    // Import helper
+    const { removeEmojis } = await import('./discord/utils/stringHelpers');
+    
+    // First try exact match (with emojis)
+    let team = Array.from(this.teams.values()).find(
       (team) => team.name.toLowerCase() === name.toLowerCase()
     );
+    
+    // If not found, try matching without emojis
+    if (!team) {
+      team = Array.from(this.teams.values()).find(
+        (team) => {
+          const cleanedTeamName = removeEmojis(team.name);
+          const cleanedSearchName = name.trim();
+          
+          return cleanedTeamName.toLowerCase() === cleanedSearchName.toLowerCase();
+        }
+      );
+    }
+    
+    return team;
   }
   
   async getAllTeams(): Promise<Team[]> {
