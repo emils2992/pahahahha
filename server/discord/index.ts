@@ -12,6 +12,8 @@ export async function setupDiscordBot(): Promise<void> {
     
     if (!token) {
       console.error('Discord bot token is not set in environment variables.');
+      // Token olmasa bile devam ediyoruz - bu sayede tokensiz durumda da verileri saklayabiliriz
+      console.log('Bot tokenı yok - ancak veriler hala saklanacak ve yüklenecek');
       return;
     }
     
