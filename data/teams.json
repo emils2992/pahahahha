@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Arsenal",
+    "traitType": "sansasyonel",
+    "players": [],
+    "id": 1
+  },
+  {
+    "name": "Aston Villa",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 2
+  },
+  {
+    "name": "Burnley",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 3
+  },
+  {
+    "name": "Brentford",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 4
+  },
+  {
+    "name": "Brighton",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 5
+  },
+  {
+    "name": "Chelsea",
+    "traitType": "çalkantılı",
+    "players": [],
+    "id": 6
+  },
+  {
+    "name": "Crystal Palace",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 7
+  },
+  {
+    "name": "Everton",
+    "traitType": "çalkantılı",
+    "players": [],
+    "id": 8
+  },
+  {
+    "name": "Fulham",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 9
+  },
+  {
+    "name": "Leeds",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 10
+  },
+  {
+    "name": "Sheffield United",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 11
+  },
+  {
+    "name": "Liverpool",
+    "traitType": "sansasyonel",
+    "players": [],
+    "id": 12
+  },
+  {
+    "name": "Manchester City",
+    "traitType": "sansasyonel",
+    "players": [],
+    "id": 13
+  },
+  {
+    "name": "Manchester United",
+    "traitType": "sansasyonel",
+    "players": [],
+    "id": 14
+  },
+  {
+    "name": "Newcastle",
+    "traitType": "çalkantılı",
+    "players": [],
+    "id": 15
+  },
+  {
+    "name": "Nottingham Forest",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 16
+  },
+  {
+    "name": "Tottenham",
+    "traitType": "çalkantılı",
+    "players": [],
+    "id": 17
+  },
+  {
+    "name": "West Ham",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 18
+  },
+  {
+    "name": "Wolves",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 19
+  },
+  {
+    "name": "Southampton",
+    "traitType": "kurumsal",
+    "players": [],
+    "id": 20
+  }
+]

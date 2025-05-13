@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { 
   users, teams, players, gameSessions, teamOwnership,
   type User, type InsertUser, 
@@ -140,8 +142,9 @@ export class MemStorage implements IStorage {
   private saveData(): void {
     try {
       // Klasör var mı kontrol et, yoksa oluştur
-      if (!fs.existsSync('./data')) {
-        fs.mkdirSync('./data', { recursive: true });
+      const dataDir = './data';
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
       }
       
       // Veri yapılarını JSON dizilerine dönüştür
@@ -161,12 +164,12 @@ export class MemStorage implements IStorage {
       };
       
       // Dosyalara yaz
-      fs.writeFileSync('./data/users.json', JSON.stringify(usersData, null, 2));
-      fs.writeFileSync('./data/teams.json', JSON.stringify(teamsData, null, 2));
-      fs.writeFileSync('./data/players.json', JSON.stringify(playersData, null, 2));
-      fs.writeFileSync('./data/game_sessions.json', JSON.stringify(gameSessionsData, null, 2));
-      fs.writeFileSync('./data/team_ownerships.json', JSON.stringify(teamOwnershipsData, null, 2));
-      fs.writeFileSync('./data/counters.json', JSON.stringify(counters, null, 2));
+      fs.writeFileSync(path.join(dataDir, 'users.json'), JSON.stringify(usersData, null, 2));
+      fs.writeFileSync(path.join(dataDir, 'teams.json'), JSON.stringify(teamsData, null, 2));
+      fs.writeFileSync(path.join(dataDir, 'players.json'), JSON.stringify(playersData, null, 2));
+      fs.writeFileSync(path.join(dataDir, 'game_sessions.json'), JSON.stringify(gameSessionsData, null, 2));
+      fs.writeFileSync(path.join(dataDir, 'team_ownerships.json'), JSON.stringify(teamOwnershipsData, null, 2));
+      fs.writeFileSync(path.join(dataDir, 'counters.json'), JSON.stringify(counters, null, 2));
       
       console.log('Veriler başarıyla kaydedildi.');
     } catch (error) {
@@ -177,31 +180,41 @@ export class MemStorage implements IStorage {
   // Veri yükleme işlemi
   private loadData(): boolean {
     try {
+      // Ana veri dizini
+      const dataDir = './data';
+      
       // Gerekli tüm dosyaların varlığını kontrol et
       const requiredFiles = [
-        './data/users.json',
-        './data/teams.json',
-        './data/players.json',
-        './data/game_sessions.json',
-        './data/team_ownerships.json',
-        './data/counters.json'
+        'users.json',
+        'teams.json',
+        'players.json',
+        'game_sessions.json',
+        'team_ownerships.json',
+        'counters.json'
       ];
+      
+      // Veri dizini var mı kontrol et
+      if (!fs.existsSync(dataDir)) {
+        console.log(`${dataDir} dizini bulunamadı, default veriler kullanılacak.`);
+        return false;
+      }
       
       // Eğer bir dosya eksikse false döndür
       for (const file of requiredFiles) {
-        if (!fs.existsSync(file)) {
-          console.log(`${file} bulunamadı, default veriler kullanılacak.`);
+        const filePath = path.join(dataDir, file);
+        if (!fs.existsSync(filePath)) {
+          console.log(`${filePath} bulunamadı, default veriler kullanılacak.`);
           return false;
         }
       }
       
       // Dosyalardan veri yükle
-      const usersData = JSON.parse(fs.readFileSync('./data/users.json', 'utf8')) as User[];
-      const teamsData = JSON.parse(fs.readFileSync('./data/teams.json', 'utf8')) as Team[];
-      const playersData = JSON.parse(fs.readFileSync('./data/players.json', 'utf8')) as Player[];
-      const gameSessionsData = JSON.parse(fs.readFileSync('./data/game_sessions.json', 'utf8')) as GameSession[];
-      const teamOwnershipsData = JSON.parse(fs.readFileSync('./data/team_ownerships.json', 'utf8')) as TeamOwnership[];
-      const counters = JSON.parse(fs.readFileSync('./data/counters.json', 'utf8')) as {
+      const usersData = JSON.parse(fs.readFileSync(path.join(dataDir, 'users.json'), 'utf8')) as User[];
+      const teamsData = JSON.parse(fs.readFileSync(path.join(dataDir, 'teams.json'), 'utf8')) as Team[];
+      const playersData = JSON.parse(fs.readFileSync(path.join(dataDir, 'players.json'), 'utf8')) as Player[];
+      const gameSessionsData = JSON.parse(fs.readFileSync(path.join(dataDir, 'game_sessions.json'), 'utf8')) as GameSession[];
+      const teamOwnershipsData = JSON.parse(fs.readFileSync(path.join(dataDir, 'team_ownerships.json'), 'utf8')) as TeamOwnership[];
+      const counters = JSON.parse(fs.readFileSync(path.join(dataDir, 'counters.json'), 'utf8')) as {
         userIdCounter: number;
         teamIdCounter: number;
         playerIdCounter: number;
@@ -281,9 +294,9 @@ export class MemStorage implements IStorage {
     
     this.users.set(user.id, updatedUser);
     
-    // Kontrol et - eğer değerlerden herhangi biri 20'nin altına düşerse, kullanıcı kovulur
+    // Kontrol et - eğer değerlerden herhangi biri 25'in altına düşerse, kullanıcı kovulur
     // Kovulma durumunda, kullanıcının takım üyeliğini sıfırla
-    const MIN_THRESHOLD = 20;
+    const MIN_THRESHOLD = 25;
     if (newFanSupport < MIN_THRESHOLD || newManagementTrust < MIN_THRESHOLD || newTeamMorale < MIN_THRESHOLD) {
       console.log(`Kullanıcı ${discordId} kritik değerlerin altına düştüğü için kovuldu!`);
       

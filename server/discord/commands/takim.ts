@@ -53,10 +53,11 @@ export const takimCommand = {
           embeds: [
             createTutorialEmbed(
               'Takım Seçme Yardımı',
-              '**Kullanım:** `.yap takim [takım adı]`\n\n' +
-              '**Örnek:** `.yap takim Galatasaray`\n\n' +
+              '**Kullanım:** `.takim [takım adı]`\n\n' +
+              '**Örnek:** `.takim Arsenal`\n\n' +
               '**Açıklama:** Teknik direktörü olacağın takımı seçer.\n' +
-              'Her takımın kendine özgü mizacı vardır (çalkantılı, kurumsal, sansasyonel).'
+              'Her takımın kendine özgü mizacı vardır (çalkantılı, kurumsal, sansasyonel).\n' +
+              'Not: Bir takım aynı anda sadece bir kullanıcı tarafından seçilebilir.'
             )
           ]
         });
@@ -78,6 +79,18 @@ export const takimCommand = {
         }).join(', ');
         
         return message.reply(`"${teamName}" isimli bir takım bulunamadı. Mevcut takımlar: ${teamOptions}`);
+      }
+      
+      // Check if this team is already owned by another user
+      const isTeamOwned = await storage.isTeamOwned(team.name);
+      if (isTeamOwned) {
+        // Get the team owner
+        const teamOwner = await storage.getTeamOwner(team.id);
+        
+        // If the team is owned by someone else
+        if (teamOwner && teamOwner.discordId !== user.discordId) {
+          return message.reply(`**${team.name}** takımı zaten **${teamOwner.username}** tarafından yönetiliyor. Başka bir takım seçmelisin.`);
+        }
       }
       
       // If user already has this team
@@ -137,6 +150,12 @@ export const takimCommand = {
               seasonRecords: {}
             });
             
+            // Assign team ownership to this user if not already assigned
+            if (!isTeamOwned) {
+              await storage.assignTeamToUser(team.id, user.id);
+              console.log(`Takım sahipliği atandı: ${team.name} -> ${user.username}`);
+            }
+            
             // Get team traits
             const teamTraits = getTeamTraits(team.traitType);
             
@@ -177,6 +196,12 @@ export const takimCommand = {
         teamMorale: 50,
         seasonRecords: {}
       });
+      
+      // Assign team ownership to this user if not already assigned
+      if (!isTeamOwned) {
+        await storage.assignTeamToUser(team.id, user.id);
+        console.log(`Takım sahipliği atandı: ${team.name} -> ${user.username}`);
+      }
       
       // Get team traits
       const teamTraits = getTeamTraits(team.traitType);
