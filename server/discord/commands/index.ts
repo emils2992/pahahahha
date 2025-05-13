@@ -10,6 +10,7 @@ import { bültenCommand } from './bülten';
 import { helpCommand } from './help';
 import { durumCommand } from './durum';
 import { ekleCommand } from './ekle';
+import { vsCommand } from './vs';
 
 // Collection to store all commands
 export const commands = new Collection();
@@ -33,3 +34,4 @@ commands.set('yardım', helpCommand); // Turkish alternative for help
 commands.set('durum', durumCommand);
 commands.set('ekle', ekleCommand);
 commands.set('takımım', takimimCommand);
+commands.set('vs', vsCommand);

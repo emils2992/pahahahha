@@ -38,7 +38,10 @@ export const helpCommand = {
         { name: 'özür', category: 'Ana Komutlar' },
         { name: 'taktik', category: 'Ana Komutlar' },
         { name: 'takim', category: 'Ana Komutlar' },
-        { name: 'bülten', category: 'Ana Komutlar' }
+        { name: 'takımım', category: 'Ana Komutlar' },
+        { name: 'bülten', category: 'Ana Komutlar' },
+        { name: 'durum', category: 'Ana Komutlar' },
+        { name: 'ekle', category: 'Ana Komutlar' }
       ];
       
       const mediaCommands = [
@@ -50,7 +53,8 @@ export const helpCommand = {
         { name: 'yalanmakinesi', category: 'Minigame Komutları' },
         { name: 'hakem', category: 'Minigame Komutları' },
         { name: 'taraftar', category: 'Minigame Komutları' },
-        { name: 'şampiyonluksozu', category: 'Minigame Komutları' }
+        { name: 'şampiyonluksozu', category: 'Minigame Komutları' },
+        { name: 'vs', category: 'Minigame Komutları' }
       ];
       
       const helpEmbed = new MessageEmbed()
