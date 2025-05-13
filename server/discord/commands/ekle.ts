@@ -17,7 +17,7 @@ const positions = ['Kaleci', 'Defans', 'Orta Saha', 'Forvet'];
 export const ekleCommand = {
   name: 'ekle',
   description: 'Takıma yeni oyuncu ekler (Sadece Yetkililer)',
-  usage: '.yap ekle [takım adı] [oyuncu bilgileri]',
+  usage: '.ekle [takım adı] [oyuncu adı] [pozisyon/seç]',
   category: 'yönetim',
   execute: async (message: Message, args: string[]) => {
     // Yetki kontrolü
@@ -33,7 +33,7 @@ export const ekleCommand = {
       // Kullanıcı kontrolü
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Önce bir takım seçmelisiniz. `.yap takim` komutunu kullanın.');
+        return message.reply('Önce bir takım seçmelisiniz. `.takim` komutunu kullanın.');
       }
       
       // Argüman kontrolü
@@ -41,29 +41,57 @@ export const ekleCommand = {
         return sendTeamSelectionEmbed(message);
       }
       
+      // İki kelimeli takım adlarını işleme (Aston Villa, Manchester United vb.)
+      let teamName = args[0];
+      let teamSearchIndex = 1;
+      let playerNameStartIndex = 1;
+      
+      // Takım adının Premier League listesinde var olup olmadığını kontrol et
+      const exactMatch = premierLeagueTeams.find(team => team.toLowerCase() === teamName.toLowerCase());
+      if (!exactMatch) {
+        // İki kelimeli takım adı kontrolü
+        for (let i = 1; i < args.length && i < 3; i++) { // En fazla 3 kelimeli takım adı kontrolü
+          const testName = args.slice(0, i + 1).join(' ');
+          const match = premierLeagueTeams.find(team => team.toLowerCase() === testName.toLowerCase());
+          if (match) {
+            teamName = testName;
+            teamSearchIndex = i + 1;
+            playerNameStartIndex = i + 1;
+            break;
+          }
+        }
+      }
+      
       // Takım adı belirtilmişse
-      const teamName = args[0];
       const team = await storage.getTeamByName(teamName);
       
       if (!team) {
         return message.reply(`"${teamName}" adında bir takım bulunamadı. Doğru yazdığınızdan emin olun.`);
       }
       
-      if (args.length === 1) {
+      if (args.length <= teamSearchIndex) {
         // Sadece takım adı belirtilmiş, oyuncu ekleme formunu göster
         return showPlayerAddForm(message, team);
       }
       
-      // Takım ve oyuncu bilgileri belirtilmiş
-      if (args.length >= 3) {
-        const playerName = args[1];
-        const position = determinePosition(args[2]);
+      // Takım ve oyuncu adı belirtilmiş, mevki seçim butonlarını göster
+      if (args.length >= playerNameStartIndex + 1) {
+        const playerName = args[playerNameStartIndex];
+        
+        // Oyuncu adı var, pozisyon belirtilmediyse veya kullanıcı butonla seçmek istiyorsa
+        if (args.length === playerNameStartIndex + 1 || args[playerNameStartIndex + 1].toLowerCase() === "seç") {
+          // Pozisyon seçimi için butonlar göster
+          return showPositionSelectionButtons(message, team, playerName);
+        }
+        
+        // Pozisyon metinle belirtilmiş
+        const position = determinePosition(args[playerNameStartIndex + 1]);
         const jerseyNumber = Math.floor(Math.random() * 99) + 1; // 1-99 arası rastgele forma numarası
         
         // Oyuncu ekle
         await addPlayerToTeam(message, team, playerName, position, jerseyNumber);
       } else {
-        message.reply('Oyuncu eklemek için: `.yap ekle [takım adı] [oyuncu adı] [pozisyon]`');
+        message.reply('Oyuncu eklemek için: `.ekle [takım adı] [oyuncu adı] [pozisyon]` veya `.ekle [takım adı] [oyuncu adı] seç` (mevki butonla seçmek için)');
       }
       
     } catch (error) {
