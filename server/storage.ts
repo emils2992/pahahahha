@@ -1,9 +1,10 @@
 import { 
-  users, teams, players, gameSessions, 
+  users, teams, players, gameSessions, teamOwnership,
   type User, type InsertUser, 
   type Team, type InsertTeam, 
   type Player, type InsertPlayer,
   type GameSession, type InsertGameSession,
+  type TeamOwnership, type InsertTeamOwnership,
   type PressConferenceResult, type DecisionResult,
   type PlayerInteractionResult, type GossipItem, type Formation
 } from "@shared/schema";
@@ -29,6 +30,9 @@ export interface IStorage {
   getTeamByName(name: string): Promise<Team | undefined>;
   getAllTeams(): Promise<Team[]>;
   createTeam(team: InsertTeam): Promise<Team>;
+  getTeamOwner(teamId: number): Promise<User | undefined>;
+  isTeamOwned(teamName: string): Promise<boolean>;
+  assignTeamToUser(teamId: number, userId: number): Promise<TeamOwnership>;
   
   // Player operations
   getPlayer(id: number): Promise<Player | undefined>;
@@ -51,22 +55,26 @@ export class MemStorage implements IStorage {
   private teams: Map<number, Team>;
   private players: Map<number, Player>;
   private gameSessions: Map<number, GameSession>;
+  private teamOwnerships: Map<number, TeamOwnership>;
   
   private userIdCounter: number;
   private teamIdCounter: number;
   private playerIdCounter: number;
   private gameSessionIdCounter: number;
+  private teamOwnershipIdCounter: number;
   
   constructor() {
     this.users = new Map();
     this.teams = new Map();
     this.players = new Map();
     this.gameSessions = new Map();
+    this.teamOwnerships = new Map();
     
     this.userIdCounter = 1;
     this.teamIdCounter = 1;
     this.playerIdCounter = 1;
     this.gameSessionIdCounter = 1;
+    this.teamOwnershipIdCounter = 1;
     
     // Initialize with some default teams
     this.initializeDefaultTeams();
