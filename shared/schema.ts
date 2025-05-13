@@ -13,6 +13,9 @@ export const users = pgTable("users", {
   teamMorale: integer("team_morale").default(50),
   titles: jsonb("titles").default([]),
   points: integer("points").default(0),
+  monthlyPoints: integer("monthly_points").default(0), // Aylık puan limiti için
+  lastPointReset: text("last_point_reset").default(''), // Son puan reset zamanı
+  lastActionTime: jsonb("last_action_time").default({}), // Komut timeout için
   seasonRecords: jsonb("season_records").default([]),
   createdAt: text("created_at").notNull(),
 });

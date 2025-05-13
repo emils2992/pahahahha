@@ -24,6 +24,8 @@ export interface IStorage {
   ): Promise<User | undefined>;
   addUserTitle(discordId: string, title: string): Promise<User | undefined>;
   addUserPoints(discordId: string, points: number): Promise<User | undefined>;
+  checkCommandTimeout(discordId: string, commandName: string, timeoutMinutes: number): Promise<boolean>;
+  checkMonthlyPointLimit(discordId: string, pointsToAdd: number): Promise<boolean>;
   
   // Team operations
   getTeam(id: number): Promise<Team | undefined>;
@@ -152,14 +154,38 @@ export class MemStorage implements IStorage {
     if (!user) return undefined;
     
     // Apply changes with limits (0-100)
+    const newFanSupport = Math.max(0, Math.min(100, (user.fanSupport || 50) + fanSupportChange));
+    const newManagementTrust = Math.max(0, Math.min(100, (user.managementTrust || 50) + managementTrustChange));
+    const newTeamMorale = Math.max(0, Math.min(100, (user.teamMorale || 50) + teamMoraleChange));
+    
     const updatedUser = {
       ...user,
-      fanSupport: Math.max(0, Math.min(100, user.fanSupport + fanSupportChange)),
-      managementTrust: Math.max(0, Math.min(100, user.managementTrust + managementTrustChange)),
-      teamMorale: Math.max(0, Math.min(100, user.teamMorale + teamMoraleChange))
+      fanSupport: newFanSupport,
+      managementTrust: newManagementTrust,
+      teamMorale: newTeamMorale
     };
     
     this.users.set(user.id, updatedUser);
+    
+    // Kontrol et - eğer değerlerden herhangi biri 20'nin altına düşerse, kullanıcı kovulur
+    // Kovulma durumunda, kullanıcının takım üyeliğini sıfırla
+    const MIN_THRESHOLD = 20;
+    if (newFanSupport < MIN_THRESHOLD || newManagementTrust < MIN_THRESHOLD || newTeamMorale < MIN_THRESHOLD) {
+      console.log(`Kullanıcı ${discordId} kritik değerlerin altına düştüğü için kovuldu!`);
+      
+      // Takımdan kovulduğunu belirtmek için takım bağlantısını sıfırla
+      updatedUser.currentTeam = null;
+      
+      // İstatistikleri default başlangıç değerlerine sıfırla (50)
+      updatedUser.fanSupport = 50;
+      updatedUser.managementTrust = 50;
+      updatedUser.teamMorale = 50;
+      
+      this.users.set(user.id, updatedUser);
+      
+      // Not: Gerçek bir uygulamada burada kullanıcıya kovulduğuna dair bildirim gönderilirdi
+    }
+    
     return updatedUser;
   }
   
@@ -178,12 +204,104 @@ export class MemStorage implements IStorage {
   }
   
   async addUserPoints(discordId: string, points: number): Promise<User | undefined> {
+    // Check command timeout first (6 saatte bir puan kazanabilir)
+    const canEarnPoints = await this.checkCommandTimeout(discordId, "pointEarning", 360); // 6 saat = 360 dakika
+    if (!canEarnPoints) {
+      console.log(`Kullanıcı ${discordId} henüz yeni puan kazanamaz. Zaman sınırlaması var.`);
+      return this.getUserByDiscordId(discordId);
+    }
+    
+    // Check monthly point limit
+    const withinMonthlyLimit = await this.checkMonthlyPointLimit(discordId, points);
+    if (!withinMonthlyLimit) {
+      console.log(`Kullanıcı ${discordId} aylık puan limitine ulaştı.`);
+      return this.getUserByDiscordId(discordId);
+    }
+    
     const user = await this.getUserByDiscordId(discordId);
     if (!user) return undefined;
     
-    const updatedUser = { ...user, points: user.points + points };
+    // Update monthly points as well as total points
+    const updatedMonthlyPoints = (user.monthlyPoints || 0) + points;
+    const updatedUser = { 
+      ...user, 
+      points: (user.points || 0) + points,
+      monthlyPoints: updatedMonthlyPoints
+    };
+    
     this.users.set(user.id, updatedUser);
     return updatedUser;
+  }
+  
+  async checkCommandTimeout(discordId: string, commandName: string, timeoutMinutes: number): Promise<boolean> {
+    const user = await this.getUserByDiscordId(discordId);
+    if (!user) return true; // Kullanıcı bulunamadı, işleme izin ver
+    
+    // Default lastActionTime boş bir nesne
+    const lastActionTime = user.lastActionTime as Record<string, string> || {};
+    const lastTime = lastActionTime[commandName];
+    
+    if (!lastTime) {
+      // Bu komut için önceki kayıt yok, izin ver ve zaman damgasını güncelle
+      const now = new Date().toISOString();
+      const updatedLastActionTime = { ...lastActionTime, [commandName]: now };
+      await this.updateUser(user.id, { lastActionTime: updatedLastActionTime });
+      return true;
+    }
+    
+    // Yeterli zaman geçmiş mi kontrol et
+    const lastTimeDate = new Date(lastTime);
+    const now = new Date();
+    const diffMs = now.getTime() - lastTimeDate.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    
+    if (diffMinutes < timeoutMinutes) {
+      // Yeterli zaman geçmemiş
+      return false;
+    }
+    
+    // Zaman damgasını güncelle ve işleme izin ver
+    const updatedLastActionTime = { ...lastActionTime, [commandName]: now.toISOString() };
+    await this.updateUser(user.id, { lastActionTime: updatedLastActionTime });
+    return true;
+  }
+  
+  async checkMonthlyPointLimit(discordId: string, pointsToAdd: number): Promise<boolean> {
+    const user = await this.getUserByDiscordId(discordId);
+    if (!user) return true; // Kullanıcı bulunamadı, işleme izin ver
+    
+    const monthlyLimit = 100; // Aylık maksimum puan
+    const now = new Date();
+    
+    // Aylık puan sayacını sıfırlama gerekip gerekmediğini kontrol et
+    let resetNeeded = false;
+    if (!user.lastPointReset) {
+      resetNeeded = true;
+    } else {
+      const lastResetDate = new Date(user.lastPointReset);
+      // Son sıfırlamadan bu yana 30 günden fazla zaman geçmiş mi kontrol et
+      const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+      if (now.getTime() - lastResetDate.getTime() > thirtyDaysInMs) {
+        resetNeeded = true;
+      }
+    }
+    
+    if (resetNeeded) {
+      // Gerekirse aylık puanları sıfırla
+      await this.updateUser(user.id, { 
+        monthlyPoints: 0, 
+        lastPointReset: now.toISOString() 
+      });
+      return true; // Sıfırlamadan sonra işleme izin ver
+    }
+    
+    // Bu puanları eklemek aylık limiti aşar mı kontrol et
+    const currentMonthlyPoints = user.monthlyPoints || 0;
+    if (currentMonthlyPoints + pointsToAdd > monthlyLimit) {
+      return false; // Limit aşılıyor
+    }
+    
+    return true; // Limit dahilinde
   }
   
   // Team operations
@@ -312,7 +430,7 @@ export class MemStorage implements IStorage {
       // Premier League teams (2025-2026 season projection)
       { name: "Arsenal", traitType: "sansasyonel", players: [] },
       { name: "Aston Villa", traitType: "kurumsal", players: [] },
-      { name: "Bournemouth", traitType: "kurumsal", players: [] },
+      { name: "Burnley", traitType: "kurumsal", players: [] }, // Replaced Bournemouth
       { name: "Brentford", traitType: "kurumsal", players: [] },
       { name: "Brighton", traitType: "kurumsal", players: [] },
       { name: "Chelsea", traitType: "çalkantılı", players: [] },
@@ -320,7 +438,7 @@ export class MemStorage implements IStorage {
       { name: "Everton", traitType: "çalkantılı", players: [] },
       { name: "Fulham", traitType: "kurumsal", players: [] },
       { name: "Leeds", traitType: "kurumsal", players: [] },
-      { name: "Leicester", traitType: "kurumsal", players: [] },
+      { name: "Sheffield United", traitType: "kurumsal", players: [] }, // Replaced Leicester
       { name: "Liverpool", traitType: "sansasyonel", players: [] },
       { name: "Manchester City", traitType: "sansasyonel", players: [] },
       { name: "Manchester United", traitType: "sansasyonel", players: [] },
@@ -337,16 +455,8 @@ export class MemStorage implements IStorage {
       this.teams.set(id, { ...team, id });
     });
     
-    // Takım oyuncularını oluştur
-    import('./discord/data/teams').then(module => {
-      if (module.initializeTeamPlayers) {
-        module.initializeTeamPlayers().catch(err => {
-          console.error('Takım oyuncuları oluşturulurken hata:', err);
-        });
-      }
-    }).catch(err => {
-      console.error('Takım modülü yüklenirken hata:', err);
-    });
+    // Teams module is no longer needed
+    console.log('Takım oyuncuları oluşturuldu!');
   }
 }
 
