@@ -12,6 +12,7 @@ import {
 export interface IStorage {
   // User operations
   getUserByDiscordId(discordId: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
   updateUserStats(
@@ -38,6 +39,7 @@ export interface IStorage {
   // Game session operations
   createGameSession(session: InsertGameSession): Promise<GameSession>;
   getGameSession(id: number): Promise<GameSession | undefined>;
+  getAllGameSessions(): Promise<GameSession[]>;
   getActiveSessionByUserId(userId: number, sessionType: string): Promise<GameSession | undefined>;
   updateGameSession(id: number, sessionData: any): Promise<GameSession | undefined>;
   endGameSession(id: number): Promise<boolean>;
@@ -75,6 +77,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(
       (user) => user.discordId === discordId
     );
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -215,6 +221,10 @@ export class MemStorage implements IStorage {
   
   async getGameSession(id: number): Promise<GameSession | undefined> {
     return this.gameSessions.get(id);
+  }
+  
+  async getAllGameSessions(): Promise<GameSession[]> {
+    return Array.from(this.gameSessions.values());
   }
   
   async getActiveSessionByUserId(userId: number, sessionType: string): Promise<GameSession | undefined> {
