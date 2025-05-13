@@ -7,14 +7,15 @@ export function handleMessageCreate(client: Client) {
     // Ignore bot messages
     if (message.author.bot) return;
     
-    // Command prefix
-    const prefix = '.yap';
+    // Command prefixes - both .h and .yap are supported for backwards compatibility
+    const prefixes = ['.h', '.yap'];
     
-    // Check if message starts with prefix
-    if (!message.content.startsWith(prefix)) return;
+    // Check if message starts with any of the prefixes
+    const usedPrefix = prefixes.find(p => message.content.startsWith(p));
+    if (!usedPrefix) return;
     
     // Parse command and arguments
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const args = message.content.slice(usedPrefix.length).trim().split(/ +/);
     const commandName = args.shift()?.toLowerCase();
     
     // If only prefix is given without command, show help
@@ -33,7 +34,7 @@ export function handleMessageCreate(client: Client) {
     if (!command) {
       // Unknown command
       return message.reply({
-        content: `Bilinmeyen komut: ${commandName}. Kullanılabilir komutlar için \`.yap\` yazınız.`
+        content: `Bilinmeyen komut: ${commandName}. Kullanılabilir komutlar için \`.h\` yazınız.`
       });
     }
     
@@ -55,7 +56,7 @@ export function handleReady(client: Client) {
     console.log(`Bot giriş yaptı: ${client.user?.tag}`);
     
     // Set bot activity
-    client.user?.setActivity('Futbol RP | .yap', { type: 'PLAYING' });
+    client.user?.setActivity('Futbol RP | .h', { type: 'PLAYING' });
   });
 }
 

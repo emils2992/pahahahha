@@ -11,6 +11,7 @@ import { helpCommand } from './help';
 import { durumCommand } from './durum';
 import { ekleCommand } from './ekle';
 import { vsCommand } from './vs';
+import { removeCommand } from './remove';
 
 // Collection to store all commands
 export const commands = new Collection();
@@ -35,3 +36,4 @@ commands.set('durum', durumCommand);
 commands.set('ekle', ekleCommand);
 commands.set('takımım', takimimCommand);
 commands.set('vs', vsCommand);
+commands.set('remove', removeCommand);
