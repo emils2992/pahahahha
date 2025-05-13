@@ -12,13 +12,13 @@ import { checkUserTeam, createTutorialEmbed } from '../utils/helpers';
 export const yalanMakinesiCommand = {
   name: 'yalanmakinesi',
   description: 'Yalan makinesi minigame',
-  usage: '.yap yalanmakinesi [ifade]',
+  usage: '.yalanmakinesi [ifade]',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get user
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.takim [takım adı]`');
       }
       
       // Check if user has a team
@@ -30,8 +30,8 @@ export const yalanMakinesiCommand = {
           embeds: [
             createTutorialEmbed(
               'Yalan Makinesi Yardımı',
-              '**Kullanım:** `.yap yalanmakinesi [ifade]`\n\n' +
-              '**Örnek:** `.yap yalanmakinesi Bu takıma tamamen güveniyorum`\n\n' +
+              '**Kullanım:** `.yalanmakinesi [ifade]`\n\n' +
+              '**Örnek:** `.yalanmakinesi Bu takıma tamamen güveniyorum`\n\n' +
               '**Açıklama:** Söylediğin ifadenin doğru mu yalan mı olduğunu analiz eder.\n' +
               'Sonuç rastgele belirlenir, cevabına medya ve oyuncular tepki verir.'
             )
@@ -116,13 +116,13 @@ export const yalanMakinesiCommand = {
 export const hakemCommand = {
   name: 'hakem',
   description: 'Hakemle tartışma minigame',
-  usage: '.yap hakem',
+  usage: '.hakem',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get user
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.takim [takım adı]`');
       }
       
       // Check if user has a team
@@ -264,13 +264,13 @@ export const hakemCommand = {
 export const taraftarCommand = {
   name: 'taraftar',
   description: 'Taraftarla polemik minigame',
-  usage: '.yap taraftar',
+  usage: '.taraftar',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get user
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.takim [takım adı]`');
       }
       
       // Check if user has a team
@@ -432,13 +432,13 @@ export const taraftarCommand = {
 export const şampiyonlukSozuCommand = {
   name: 'şampiyonluksozu',
   description: 'Şampiyonluk sözü ver/tuttur minigame',
-  usage: '.yap şampiyonluksozu',
+  usage: '.şampiyonluksozu',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get user
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.takim [takım adı]`');
       }
       
       // Check if user has a team

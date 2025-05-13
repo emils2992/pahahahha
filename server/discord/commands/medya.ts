@@ -19,13 +19,13 @@ import { checkUserTeam, createTutorialEmbed } from '../utils/helpers';
 export const dedikoduCommand = {
   name: 'dedikodu',
   description: 'Medya dedikodularını göster',
-  usage: '.yap dedikodu',
+  usage: '.dedikodu',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get user
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.takim [takım adı]`');
       }
       
       // Check if user has a team
@@ -130,13 +130,13 @@ export const dedikoduCommand = {
 export const sızdırCommand = {
   name: 'sızdır',
   description: 'Medyaya bilgi sızdır',
-  usage: '.yap sızdır',
+  usage: '.sızdır',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get user
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.takim [takım adı]`');
       }
       
       // Check if user has a team

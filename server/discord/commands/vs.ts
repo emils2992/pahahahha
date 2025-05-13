@@ -14,7 +14,7 @@ import { createTutorialEmbed } from '../utils/helpers';
 export const vsCommand = {
   name: 'vs',
   description: 'Penaltı atış yarışması',
-  usage: '.yap vs @kullanıcı',
+  usage: '.vs @kullanıcı',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get the opponent from mentions
@@ -25,8 +25,8 @@ export const vsCommand = {
           embeds: [
             createTutorialEmbed(
               'Penaltı Atışı Yardımı',
-              '**Kullanım:** `.yap vs @kullanıcı`\n\n' +
-              '**Örnek:** `.yap vs @EmilSWD`\n\n' +
+              '**Kullanım:** `.vs @kullanıcı`\n\n' +
+              '**Örnek:** `.vs @EmilSWD`\n\n' +
               '**Açıklama:** Bir başka kullanıcıyla 5 atışlık penaltı yarışması yaparsınız.\n' +
               '10 saniye içinde kaleciyi veya atışı nereye yapacağınızı seçersiniz.\n' +
               'Berabere kalınırsa altın gol kuralı uygulanır.'
@@ -430,6 +430,43 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
   if (gameState.isGoldenGoal && isGoal) {
     // Game over, golden goal scored
     await endGame(message, player1, player2, gameState, shooter);
+    return;
+  }
+  
+  // Check if a player has mathematically won (cannot be beaten anymore)
+  const remainingKicks = gameState.maxRounds - gameState.currentRound + (gameState.currentShooter === player1.id ? 0 : 1);
+  const player1Score = gameState.scores[player1.id];
+  const player2Score = gameState.scores[player2.id];
+  
+  if (player1Score > player2Score + remainingKicks) {
+    // Player 1 has already won mathematically
+    await message.channel.send({
+      embeds: [
+        new MessageEmbed()
+          .setColor('#f39c12')
+          .setTitle('🏆 Maç Erken Bitti!')
+          .setDescription(
+            `**${player1.username}** matematiksel olarak kazandı!\n` +
+            `${player1Score} - ${player2Score} sonucunda kalan atışlar oynanmadan sonuç belirlendi.`
+          )
+      ]
+    });
+    await endGame(message, player1, player2, gameState, player1);
+    return;
+  } else if (player2Score > player1Score + remainingKicks) {
+    // Player 2 has already won mathematically
+    await message.channel.send({
+      embeds: [
+        new MessageEmbed()
+          .setColor('#f39c12')
+          .setTitle('🏆 Maç Erken Bitti!')
+          .setDescription(
+            `**${player2.username}** matematiksel olarak kazandı!\n` +
+            `${player1Score} - ${player2Score} sonucunda kalan atışlar oynanmadan sonuç belirlendi.`
+          )
+      ]
+    });
+    await endGame(message, player1, player2, gameState, player2);
     return;
   }
   

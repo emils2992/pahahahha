@@ -220,7 +220,7 @@ export function createTeamSelectionEmbed(teams: Team[]): MessageEmbed {
     .addField('📋 Kullanılabilir Takımlar', teams.map(team => 
       `**${team.name}** - ${team.traitType}`
     ).join('\n'))
-    .setFooter({ text: 'Takım seçmek için .yap takim [takım adı] komutunu kullan' });
+    .setFooter({ text: 'Takım seçmek için .takim [takım adı] komutunu kullan' });
 }
 
 // Create embed for team info

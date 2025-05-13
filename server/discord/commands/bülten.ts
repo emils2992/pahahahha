@@ -10,13 +10,13 @@ import { formatTimestamp } from '../utils/helpers';
 export const bültenCommand = {
   name: 'bülten',
   description: 'Günlük bülten göster',
-  usage: '.yap bülten',
+  usage: '.bülten',
   execute: async (message: Message, args: string[]) => {
     try {
       // Get user
       const user = await storage.getUserByDiscordId(message.author.id);
       if (!user) {
-        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.yap takim [takım adı]`');
+        return message.reply('Profil bulunamadı. Lütfen bir takım seçerek başlayın: `.takim [takım adı]`');
       }
       
       // Check if user has a team

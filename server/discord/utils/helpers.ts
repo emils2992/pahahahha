@@ -196,7 +196,7 @@ export function formatTimestamp(date: Date, format: 'date' | 'time' | 'datetime'
 export async function checkUserTeam(user: User, message: Message): Promise<boolean> {
   if (!user.currentTeam) {
     await message.reply({
-      content: 'Henüz bir takım seçmedin! Teknik direktörü olacağın takımı seçmek için `.yap takim [takım adı]` komutunu kullan.'
+      content: 'Henüz bir takım seçmedin! Teknik direktörü olacağın takımı seçmek için `.takim [takım adı]` komutunu kullan.'
     });
     return false;
   }

@@ -7,7 +7,7 @@ import { getTeamTraits } from '../data/teamTraits';
 export const durumCommand = {
   name: 'durum',
   description: 'Oyundaki performansınızı ve durumunuzu gösterir',
-  usage: '.yap durum',
+  usage: '.durum',
   category: 'genel',
   execute: async (message: Message, args: string[]) => {
     try {
@@ -15,7 +15,7 @@ export const durumCommand = {
       const user = await storage.getUserByDiscordId(message.author.id);
       
       if (!user) {
-        return message.reply('Oyunda henüz bir profil oluşturmamışsınız. Takım seçmek için `.yap takim` komutunu kullanabilirsiniz.');
+        return message.reply('Oyunda henüz bir profil oluşturmamışsınız. Takım seçmek için `.takim` komutunu kullanabilirsiniz.');
       }
       
       // Create the status embed
