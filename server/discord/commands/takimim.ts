@@ -57,10 +57,11 @@ export const takimimCommand = {
           .map(p => {
             // Show mood emoji
             let moodEmoji = '😐';
-            if (p.mood >= 80) moodEmoji = '😄';
-            else if (p.mood >= 60) moodEmoji = '🙂';
-            else if (p.mood <= 30) moodEmoji = '😠';
-            else if (p.mood <= 50) moodEmoji = '😒';
+            const mood = p.mood || 70; // Default to 70 if mood is null
+            if (mood >= 80) moodEmoji = '😄';
+            else if (mood >= 60) moodEmoji = '🙂';
+            else if (mood <= 30) moodEmoji = '😠';
+            else if (mood <= 50) moodEmoji = '😒';
             
             return `**${p.jerseyNumber}** - ${p.name} ${moodEmoji}`;
           })

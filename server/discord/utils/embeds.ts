@@ -67,7 +67,8 @@ export function createPressResultEmbed(
     .setDescription(`**${coachName}** basın toplantısı tamamlandı!`)
     .addField('📰 Medya Yorumu', result.mediaComment)
     .addField('👥 Taraftar Mutluluğu', `${result.fanSupportChange > 0 ? '📈' : '📉'} ${result.fanSupportChange > 0 ? '+' : ''}${result.fanSupportChange}% (Yeni: ${newFanSupport}%)`, true)
-    .addField('🏢 Yönetim Tepkisi', result.managementReaction, true)
+    .addField('🏢 Yönetim Güveni', `${result.managementTrustChange > 0 ? '📈' : '📉'} ${result.managementTrustChange > 0 ? '+' : ''}${result.managementTrustChange}% (Yeni: ${newManagementTrust}%)`, true)
+    .addField('💼 Yönetim Tepkisi', result.managementReaction)
     .setFooter({ text: `Futbol RP Bot • ${formatTimestamp(new Date())}` });
   
   if (result.gossip) {

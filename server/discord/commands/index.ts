@@ -5,6 +5,7 @@ import { kadroCommand, özürCommand, taktikCommand } from './kadro';
 import { dedikoduCommand, sızdırCommand } from './medya';
 import { yalanMakinesiCommand, hakemCommand, taraftarCommand, şampiyonlukSozuCommand } from './minigames';
 import { takimCommand } from './takim';
+import { takimimCommand } from './takimim';
 import { bültenCommand } from './bülten';
 import { helpCommand } from './help';
 import { durumCommand } from './durum';
@@ -31,3 +32,4 @@ commands.set('help', helpCommand);
 commands.set('yardım', helpCommand); // Turkish alternative for help
 commands.set('durum', durumCommand);
 commands.set('ekle', ekleCommand);
+commands.set('takımım', takimimCommand);
