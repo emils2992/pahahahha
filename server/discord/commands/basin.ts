@@ -36,7 +36,7 @@ export const basinCommand = {
       if (!hasTeam) return;
       
       // Kullanıcı yetkili mi kontrol et (yetkililerin ID'lerini burada belirle)
-      const adminUserIds = ['794205713533894696']; // Yetkili kullanıcı ID'lerini buraya ekle
+      const adminUserIds = ['794205713533894696', '1371879530020737214', '1352647377940512858']; // Yetkili kullanıcı ID'leri
       const isAdmin = adminUserIds.includes(message.author.id);
       
       // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
