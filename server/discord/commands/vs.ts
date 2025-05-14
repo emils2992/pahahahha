@@ -206,7 +206,8 @@ async function playRound(message: Message, player1: DiscordUser, player2: Discor
       `**Skor:** ${player1.username} ${gameState.scores[player1.id]} - ${gameState.scores[player2.id]} ${player2.username}`
     )
     .setImage('https://media.giphy.com/media/Tcxhx0GJ5DBqYrZgB5/giphy.gif')
-    .addField('Süre', '⏱️ Her oyuncunun seçim yapması için 10 saniye vardır!');
+    .addField('Süre', '⏱️ Her oyuncunun seçim yapması için 15 saniye vardır!')
+    .addField('📱 Özel Mesaj Bilgisi', '⚠️ Lütfen botun size gönderdiği özel mesajlara (DM) bakın! Seçimlerinizi orada yapmalısınız!');
   
   // Create penalty buttons for shooter
   const shooterRow = new MessageActionRow()
@@ -502,13 +503,27 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
     return;
   }
   
-  // Check if a player has mathematically won (cannot be beaten anymore)
-  const remainingKicks = gameState.maxRounds - gameState.currentRound + (gameState.currentShooter === player1.id ? 0 : 1);
+  // Matematiksel kazanan hesaplama (artık daha detaylı ve doğru)
+  // Her oyuncu kaç penaltı kullandı?
+  const player1RemainingKicks = gameState.maxRounds - gameState.history.filter(h => h.shooter === player1.id).length;
+  const player2RemainingKicks = gameState.maxRounds - gameState.history.filter(h => h.shooter === player2.id).length;
+  
+  // Skorları al
   const player1Score = gameState.scores[player1.id];
   const player2Score = gameState.scores[player2.id];
   
-  if (player1Score > player2Score + remainingKicks) {
+  // Hesaplamada debug bilgilerini görelim
+  console.log(`Matematiksel kazanan kontrolü:
+    - Tur: ${gameState.currentRound}
+    - ${player1.username}: ${player1Score} gol, ${player1RemainingKicks} vuruş kaldı
+    - ${player2.username}: ${player2Score} gol, ${player2RemainingKicks} vuruş kaldı
+  `);
+  
+  // Sadece eğer oyuncunun kalan vuruşlarını yapsalar bile rakibini geçemeyeceği durumda matematik kazanan belirlenir
+  if (player1RemainingKicks === 0 && player2RemainingKicks > 0 && player1Score > player2Score + player2RemainingKicks) {
     // Player 1 has already won mathematically
+    console.log(`Matematiksel kazanan: ${player1.username} (${player1Score} > ${player2Score} + ${player2RemainingKicks})`);
+    
     await message.channel.send({
       embeds: [
         new MessageEmbed()
@@ -522,8 +537,10 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
     });
     await endGame(message, player1, player2, gameState, player1);
     return;
-  } else if (player2Score > player1Score + remainingKicks) {
+  } else if (player2RemainingKicks === 0 && player1RemainingKicks > 0 && player2Score > player1Score + player1RemainingKicks) {
     // Player 2 has already won mathematically
+    console.log(`Matematiksel kazanan: ${player2.username} (${player2Score} > ${player1Score} + ${player1RemainingKicks})`);
+    
     await message.channel.send({
       embeds: [
         new MessageEmbed()
@@ -536,6 +553,25 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
       ]
     });
     await endGame(message, player1, player2, gameState, player2);
+    return;
+  }
+  
+  // Eğer her iki oyuncu da tüm atışlarını kullandıysa ve skor eşit değilse, oyun biter
+  if (player1RemainingKicks === 0 && player2RemainingKicks === 0 && player1Score !== player2Score) {
+    console.log(`Normal atışlar bitti, skor: ${player1Score}-${player2Score}`);
+    const winner = player1Score > player2Score ? player1 : player2;
+    await message.channel.send({
+      embeds: [
+        new MessageEmbed()
+          .setColor('#f39c12')
+          .setTitle('🏆 Maç Bitti!')
+          .setDescription(
+            `**${winner.username}** kazandı!\n` +
+            `Final skor: ${player1Score} - ${player2Score}`
+          )
+      ]
+    });
+    await endGame(message, player1, player2, gameState, winner);
     return;
   }
   

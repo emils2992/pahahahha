@@ -5,14 +5,17 @@
     "username": "emilswd",
     "currentTeam": "Chelsea",
     "fanSupport": 85,
-    "managementTrust": 55,
+    "managementTrust": 35,
     "teamMorale": 76,
-    "titles": [],
-    "points": 2,
-    "monthlyPoints": 2,
+    "titles": [
+      "Yönetimle Savaşan",
+      "Penaltı Kralı"
+    ],
+    "points": 8,
+    "monthlyPoints": 8,
     "lastPointReset": "2025-05-13T19:42:11.977Z",
     "lastActionTime": {
-      "pointEarning": "2025-05-13T19:42:11.976Z"
+      "pointEarning": "2025-05-14T10:33:29.943Z"
     },
     "seasonRecords": {
       "şampiyonlukSözü": "Bu sezon şampiyonluğu kesinlikle kazanacağız! Taraftarlarımıza söz veriyorum."
