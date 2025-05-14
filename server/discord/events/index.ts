@@ -12,15 +12,16 @@ export function handleMessageCreate(client: Client) {
     // Ignore bot messages
     if (message.author.bot) return;
     
-    // Only allow commands in the designated channel
-    // Kanal ID'si doğrudan koda entegre edildi
-    const allowedChannelId = process.env.COMMAND_CHANNEL_ID || '1352647377940512858'; // Belirtilen kanal ID'si
+    // Komut kanalı kısıtlaması kaldırıldı
+    // Her komut her kanalda çalışabilir, ancak bazıları zaman sınırlamalı olacak
     
-    // Check if message is in the allowed channel or if we're in development (no restriction)
-    if (allowedChannelId && message.channel.id !== allowedChannelId) {
-      // Message is not in the allowed channel, silently ignore
-      return;
-    }
+    // Zaman kısıtlamasız her yerde çalışabilen bilgi komutları
+    const alwaysAllowedCommands = [
+      'takim', 'bülten', 'durum', 'yalanmakinesi', 'taktik', 'help', 'yardım', 'vs'
+    ];
+    
+    // NOT: Zaman kısıtlaması komutların kendi içinde kontrol ediliyor (storage.checkCommandTimeout ile)
+    // Kanal kısıtlaması artık uygulanmıyor
     
     // Command prefixes - both direct commands with "." and full form with ".h" are supported
     const fullPrefix = '.h';

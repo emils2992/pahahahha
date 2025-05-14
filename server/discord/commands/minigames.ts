@@ -25,21 +25,8 @@ export const yalanMakinesiCommand = {
       const hasTeam = await checkUserTeam(user, message);
       if (!hasTeam) return;
       
-      // Kullanıcı yetkili mi kontrol et
-      const adminUserIds = ['1371879530020737214', '794205713533894696']; // Yetkili kullanıcı ID'leri
-      const isAdmin = adminUserIds.includes(message.author.id);
-      
-      // 6 saat zaman kısıtlaması kontrol et - yetkili değilse
-      const canUseCommand = await storage.checkCommandTimeout(
-        user.discordId, 
-        "yalanmakinesi_command", 
-        360, // 6 saat = 360 dakika
-        isAdmin // Yetkili ise zaman kısıtlaması yok
-      );
-      
-      if (!canUseCommand) {
-        return message.reply('Yalan makinesi komutunu kullanmak için 6 saat beklemelisiniz!');
-      }
+      // Bilgi komutu olduğu için yalanmakinesi her zaman kullanılabilir
+      // Zaman kısıtlaması kaldırıldı
       
       if (!args.length) {
         return message.reply({
