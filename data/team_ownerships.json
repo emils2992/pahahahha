@@ -4,5 +4,11 @@
     "teamId": 6,
     "userId": 1,
     "assignedAt": "2025-05-13T19:42:00.069Z"
+  },
+  {
+    "id": 2,
+    "teamId": 2,
+    "userId": 2,
+    "assignedAt": "2025-05-14T13:19:04.535Z"
   }
 ]

@@ -21,5 +21,24 @@
       "şampiyonlukSözü": "Bu sezon şampiyonluğu kesinlikle kazanacağız! Taraftarlarımıza söz veriyorum."
     },
     "createdAt": "2025-05-13T19:42:00.068Z"
+  },
+  {
+    "discordId": "1173735298329493675",
+    "username": "frozydebate",
+    "currentTeam": "Aston Villa",
+    "fanSupport": 55,
+    "managementTrust": 45,
+    "teamMorale": 50,
+    "titles": [],
+    "points": 2,
+    "seasonRecords": {},
+    "createdAt": "2025-05-14T13:18:59.165Z",
+    "id": 2,
+    "lastActionTime": {
+      "sizdir_command": "2025-05-14T13:19:34.789Z",
+      "pointEarning": "2025-05-14T13:19:38.798Z"
+    },
+    "monthlyPoints": 2,
+    "lastPointReset": "2025-05-14T13:19:38.799Z"
   }
 ]
