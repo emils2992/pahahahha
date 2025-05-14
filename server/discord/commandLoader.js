@@ -1,18 +1,20 @@
 // Command loader for Discord bot
-const fs = require('fs');
-const path = require('path');
-const { Collection } = require('discord.js');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { Collection } from 'discord.js';
+import { commands } from './commands/index.js';
 
-// Collection to store all commands
-const commands = new Collection();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load all command files
-function loadCommands() {
+export async function loadCommands() {
   try {
     // Read command directory
     const commandsPath = path.join(__dirname, 'commands');
     const commandFiles = fs.readdirSync(commandsPath).filter(file => 
-      file.endsWith('.js') || file.endsWith('.ts')
+      file.endsWith('.js')
     );
 
     // Clear existing commands
@@ -20,13 +22,14 @@ function loadCommands() {
 
     // Load each command file
     for (const file of commandFiles) {
-      if (file === 'index.ts' || file === 'index.js') continue; // Skip index files
+      if (file === 'index.js') continue; // Skip index files
       
       const filePath = path.join(commandsPath, file);
       
       try {
-        // Require the command file
-        const command = require(filePath);
+        // Import the command file
+        const commandModule = await import(`./commands/${file}`);
+        const command = commandModule.default || commandModule;
         
         // Get commands from the file
         // Each file could export multiple commands
@@ -55,7 +58,6 @@ function loadCommands() {
   return commands;
 }
 
-module.exports = {
-  loadCommands,
-  getCommands: () => commands
-};
+export function getCommands() {
+  return commands;
+}

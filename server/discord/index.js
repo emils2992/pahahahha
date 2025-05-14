@@ -1,76 +1,61 @@
-const { Client, Intents } = require('discord.js');
-const { registerEvents } = require('./events');
+import { Client } from 'discord.js';
+import { loadCommands } from './commandLoader.js';
+import { registerEvents } from './events/index.js';
 
 // Discord client instance
-let client = null;
+let discordClient = null;
 
-// Setup Discord bot
-async function setupDiscordBot() {
+// Set up Discord bot
+export async function setupDiscordBot() {
   try {
-    // Check for bot token
+    // Check if token exists
     const token = process.env.DISCORD_BOT_TOKEN;
-    
     if (!token) {
-      console.error('Discord bot token is not set in environment variables.');
-      // Token olmasa bile devam ediyoruz - bu sayede tokensiz durumda da verileri saklayabiliriz
+      console.warn('Discord bot token is not set in environment variables.');
       console.log('Bot tokenı yok - ancak veriler hala saklanacak ve yüklenecek');
       return;
     }
     
-    // Create a new client
-    client = new Client({
+    // Create Discord client with required intents
+    const client = new Client({
       intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        Intents.FLAGS.DIRECT_MESSAGES
-      ],
-      partials: ['MESSAGE', 'CHANNEL', 'REACTION']
+        'GUILDS',              // For guild info and events
+        'GUILD_MESSAGES',      // For message commands
+        'GUILD_MEMBERS',       // For member info
+        'DIRECT_MESSAGES'      // For DM commands
+      ]
     });
     
-    // Register event handlers
+    // Load all commands
+    await loadCommands();
+    
+    // Register all event handlers
     registerEvents(client);
     
-    // Login to Discord
+    // Log in to Discord
     await client.login(token);
     
-    console.log('Discord bot setup complete');
+    // Store client for later reference
+    discordClient = client;
     
-    // Register process exit events to properly logout
-    process.on('SIGINT', () => {
-      console.log('SIGINT signal received: logging out Discord bot');
-      client?.destroy();
-      process.exit(0);
-    });
-    
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM signal received: logging out Discord bot');
-      client?.destroy();
-      process.exit(0);
-    });
-    
+    console.log('Discord bot initialized and connected.');
   } catch (error) {
-    console.error('Error setting up Discord bot:', error);
-    throw error;
+    console.error('Discord bot initialization error:', error);
+    discordClient = null;
   }
 }
 
 // Get the Discord client instance
-function getDiscordClient() {
-  return client;
+export function getDiscordClient() {
+  return discordClient;
 }
 
 // Stop the Discord bot
-async function stopDiscordBot() {
-  if (client) {
-    await client.destroy();
-    client = null;
-    console.log('Discord bot stopped');
+export async function stopDiscordBot() {
+  if (discordClient) {
+    console.log('Shutting down Discord bot...');
+    discordClient.destroy();
+    discordClient = null;
+    console.log('Discord bot shut down.');
   }
 }
-
-module.exports = {
-  setupDiscordBot,
-  getDiscordClient,
-  stopDiscordBot
-};

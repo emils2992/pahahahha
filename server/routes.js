@@ -1,9 +1,8 @@
-import type { Express } from "express";
-import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { setupDiscordBot } from "./discord";
+import { createServer } from "http";
+import { storage } from "./storage.js";
+import { setupDiscordBot } from "./discord/index.js";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app) {
   // Create HTTP server
   const httpServer = createServer(app);
   

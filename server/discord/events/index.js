@@ -1,17 +1,21 @@
-// Discord event handlers
-const { loadCommands, getCommands } = require('../commandLoader');
+import { commands } from '../commands/index.js';
 
 // Handler for message create event
-function handleMessageCreate(client) {
+export function handleMessageCreate(client) {
   client.on('messageCreate', async (message) => {
     // Ignore bot messages
     if (message.author.bot) return;
     
-    // Load commands if needed
-    const commands = getCommands();
-    if (commands.size === 0) {
-      loadCommands();
-    }
+    // Komut kanalı kısıtlaması kaldırıldı
+    // Her komut her kanalda çalışabilir, ancak bazıları zaman sınırlamalı olacak
+    
+    // Zaman kısıtlamasız her yerde çalışabilen bilgi komutları
+    const alwaysAllowedCommands = [
+      'takim', 'bülten', 'durum', 'yalanmakinesi', 'taktik', 'help', 'yardım', 'vs'
+    ];
+    
+    // NOT: Zaman kısıtlaması komutların kendi içinde kontrol ediliyor (storage.checkCommandTimeout ile)
+    // Kanal kısıtlaması artık uygulanmıyor
     
     // Command prefixes - both direct commands with "." and full form with ".h" are supported
     const fullPrefix = '.h';
@@ -81,7 +85,7 @@ function handleMessageCreate(client) {
 }
 
 // Handler for client ready event
-function handleReady(client) {
+export function handleReady(client) {
   client.once('ready', () => {
     console.log(`Bot giriş yaptı: ${client.user?.tag}`);
     
@@ -91,10 +95,7 @@ function handleReady(client) {
 }
 
 // Initialize all event handlers
-function registerEvents(client) {
-  // Load commands first
-  loadCommands();
-  
+export function registerEvents(client) {
   handleReady(client);
   handleMessageCreate(client);
   
@@ -112,7 +113,3 @@ function registerEvents(client) {
     console.error('Unhandled promise rejection:', error);
   });
 }
-
-module.exports = {
-  registerEvents
-};

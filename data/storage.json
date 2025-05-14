@@ -1,0 +1,115 @@
+{
+  "users": [],
+  "teams": [
+    {
+      "name": "🦅 Beşiktaş",
+      "traitType": "çalkantılı",
+      "id": 1
+    },
+    {
+      "name": "🦁 Galatasaray",
+      "traitType": "sansasyonel",
+      "id": 2
+    },
+    {
+      "name": "💛 Fenerbahçe",
+      "traitType": "sansasyonel",
+      "id": 3
+    },
+    {
+      "name": "💜 Trabzonspor",
+      "traitType": "çalkantılı",
+      "id": 4
+    },
+    {
+      "name": "🔴 Manchester United",
+      "traitType": "sansasyonel",
+      "id": 5
+    },
+    {
+      "name": "🔵 Manchester City",
+      "traitType": "kurumsal",
+      "id": 6
+    },
+    {
+      "name": "⚪ Real Madrid",
+      "traitType": "kurumsal",
+      "id": 7
+    },
+    {
+      "name": "🔴 Barcelona",
+      "traitType": "kurumsal",
+      "id": 8
+    },
+    {
+      "name": "⚪ Bayern Munich",
+      "traitType": "kurumsal",
+      "id": 9
+    },
+    {
+      "name": "⚫ Juventus",
+      "traitType": "kurumsal",
+      "id": 10
+    },
+    {
+      "name": "🔴 Liverpool",
+      "traitType": "kurumsal",
+      "id": 11
+    },
+    {
+      "name": "🔵 Chelsea",
+      "traitType": "çalkantılı",
+      "id": 12
+    },
+    {
+      "name": "⚪ Tottenham",
+      "traitType": "çalkantılı",
+      "id": 13
+    },
+    {
+      "name": "🔴 Arsenal",
+      "traitType": "kurumsal",
+      "id": 14
+    },
+    {
+      "name": "🔵 PSG",
+      "traitType": "sansasyonel",
+      "id": 15
+    },
+    {
+      "name": "⚫ AC Milan",
+      "traitType": "çalkantılı",
+      "id": 16
+    },
+    {
+      "name": "🔵 Inter",
+      "traitType": "çalkantılı",
+      "id": 17
+    },
+    {
+      "name": "🟡 Borussia Dortmund",
+      "traitType": "çalkantılı",
+      "id": 18
+    },
+    {
+      "name": "⚪ Ajax",
+      "traitType": "kurumsal",
+      "id": 19
+    },
+    {
+      "name": "🔴 Atletico Madrid",
+      "traitType": "çalkantılı",
+      "id": 20
+    }
+  ],
+  "players": [],
+  "gameSessions": [],
+  "teamOwnerships": [],
+  "counters": {
+    "userId": 1,
+    "teamId": 21,
+    "playerId": 1,
+    "gameSessionId": 1,
+    "teamOwnershipId": 1
+  }
+}
