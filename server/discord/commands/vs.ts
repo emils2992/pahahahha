@@ -181,7 +181,8 @@ async function runPenaltyShootout(message: Message, player1: DiscordUser, player
     currentGoalkeeper: player2.id,
     shooterChoice: '',
     goalkeeperChoice: '',
-    history: []
+    history: [],
+    isProcessing: false // İşlem durumunu takip etmek için flag
   };
   
   // Start the game loop
@@ -308,16 +309,16 @@ async function playRound(message: Message, player1: DiscordUser, player2: Discor
     embeds: [roundEmbed]
   });
   
-  // Create collectors for both players
+  // Create collectors for both players with 15 seconds timeout
   const shooterCollector = shooterMessage.createMessageComponentCollector({
     filter: (i) => i.user.id === shooter.id,
-    time: 10000,
+    time: 15000, // 15 saniye
     max: 1
   });
   
   const goalkeeperCollector = goalkeeperMessage.createMessageComponentCollector({
     filter: (i) => i.user.id === goalkeeper.id,
-    time: 10000,
+    time: 15000, // 15 saniye
     max: 1
   });
   
@@ -337,8 +338,9 @@ async function playRound(message: Message, player1: DiscordUser, player2: Discor
       components: []
     });
     
-    // Check if we can process the result
-    if (gameState.goalkeeperChoice) {
+    // Check if we can process the result and it's not already being processed
+    if (gameState.goalkeeperChoice && !gameState.isProcessing) {
+      gameState.isProcessing = true;
       await processRoundResult(message, player1, player2, gameState, waitingMessage);
     }
   });
@@ -359,8 +361,9 @@ async function playRound(message: Message, player1: DiscordUser, player2: Discor
       components: []
     });
     
-    // Check if we can process the result
-    if (gameState.shooterChoice) {
+    // Check if we can process the result and it's not already being processed
+    if (gameState.shooterChoice && !gameState.isProcessing) {
+      gameState.isProcessing = true;
       await processRoundResult(message, player1, player2, gameState, waitingMessage);
     }
   });
@@ -379,8 +382,9 @@ async function playRound(message: Message, player1: DiscordUser, player2: Discor
         components: []
       });
       
-      // Check if we can process the result
-      if (gameState.goalkeeperChoice) {
+      // Check if we can process the result and it's not already being processed
+      if (gameState.goalkeeperChoice && !gameState.isProcessing) {
+        gameState.isProcessing = true;
         await processRoundResult(message, player1, player2, gameState, waitingMessage);
       }
     }
@@ -399,8 +403,9 @@ async function playRound(message: Message, player1: DiscordUser, player2: Discor
         components: []
       });
       
-      // Check if we can process the result
-      if (gameState.shooterChoice) {
+      // Check if we can process the result and it's not already being processed
+      if (gameState.shooterChoice && !gameState.isProcessing) {
+        gameState.isProcessing = true;
         await processRoundResult(message, player1, player2, gameState, waitingMessage);
       }
     }
@@ -428,7 +433,14 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
   
   // Update score
   if (isGoal) {
+    // Penaltı gol oldu, skoru güncelle
     gameState.scores[shooter.id]++;
+    
+    // Güvenlik kontrolü - altın gol dışında maksimum 5 gol atılabilir
+    if (!gameState.isGoldenGoal && gameState.scores[shooter.id] > 5) {
+      console.log(`Tur: ${gameState.currentRound}, Bug önlendi: ${shooter.username} için skor 5'e sabitlendi`);
+      gameState.scores[shooter.id] = 5;
+    }
   }
   
   // Create result embed for channel (with limited information)
@@ -470,7 +482,23 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
   // Check if the game should continue
   if (gameState.isGoldenGoal && isGoal) {
     // Game over, golden goal scored
+    console.log(`Altın gol: ${shooter.username} tarafından atıldı`);
     await endGame(message, player1, player2, gameState, shooter);
+    return;
+  }
+  
+  // Altın gol modundaysa ve çok uzun sürüyorsa (maksimum 5 ekstra tur)
+  if (gameState.isGoldenGoal && gameState.currentRound > 10) {
+    console.log(`Altın gol fazla uzadı (${gameState.currentRound} tur), oyunu zorla bitiriyorum.`);
+    // En son golü atan oyuncu kazanır, eşitse player1 kazanır
+    const lastGoalScorer = gameState.history.length > 0 ? 
+      gameState.history[gameState.history.length - 1].isGoal ? 
+        gameState.history[gameState.history.length - 1].shooter === player1.id ? player1 : player2 
+        : null 
+      : null;
+    
+    const winner = lastGoalScorer || player1;
+    await endGame(message, player1, player2, gameState, winner);
     return;
   }
   
@@ -527,6 +555,18 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
   
   // Check if the game should end
   if (gameState.currentRound > gameState.maxRounds) {
+    // Güvenlik kontrolü - normal penaltılarda maksimum skor 5-5 olabilir
+    // Bu sınırların dışında bir skor varsa, düzelt
+    if (gameState.scores[player1.id] > 5) {
+      console.log(`Bug tespit edildi: ${player1.username} için skor ${gameState.scores[player1.id]} yerine 5'e düşürüldü`);
+      gameState.scores[player1.id] = 5;
+    }
+    
+    if (gameState.scores[player2.id] > 5) {
+      console.log(`Bug tespit edildi: ${player2.username} için skor ${gameState.scores[player2.id]} yerine 5'e düşürüldü`);
+      gameState.scores[player2.id] = 5;
+    }
+    
     // Check if we have a winner
     if (gameState.scores[player1.id] !== gameState.scores[player2.id]) {
       // We have a winner
@@ -565,33 +605,76 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
 }
 
 // Function to end the game and announce winner
+// Oyun bitimini izlemek için global değişken
+const activeGames = new Set<string>();
+
 async function endGame(message: Message, player1: DiscordUser, player2: DiscordUser, gameState: any, winner: DiscordUser) {
+  // Benzersiz bir oyun ID'si oluştur
+  const gameId = `${player1.id}-${player2.id}-${message.id}`;
+  
+  // Eğer bu oyun zaten sonlandırılmışsa, tekrar işleme
+  if (activeGames.has(gameId)) {
+    console.log(`Oyun zaten sonlandırılmış: ${gameId}`);
+    return;
+  }
+  
+  // Oyunu aktif oyunlar listesine ekle
+  activeGames.add(gameId);
+  
+  // İşlem bitince oyunu listeden çıkar (10 saniye sonra)
+  setTimeout(() => {
+    activeGames.delete(gameId);
+    console.log(`Oyun listeden temizlendi: ${gameId}`);
+  }, 10000);
   const score1 = gameState.scores[player1.id];
   const score2 = gameState.scores[player2.id];
   
-  // Create summary embed
-  const summaryEmbed = new MessageEmbed()
+  // Create public summary embed (with limited information)
+  const publicSummaryEmbed = new MessageEmbed()
     .setColor('#f1c40f')
     .setTitle('🏆 Penaltı Yarışması Sonucu')
     .setDescription(`**${winner.username}** yarışmayı kazandı!`)
     .addField('Final Skor', `**${player1.username}** ${score1} - ${score2} **${player2.username}**`)
     .setFooter({ text: `${gameState.isGoldenGoal ? 'Altın gol kuralıyla kazandı!' : ''}` });
   
-  // Add match history
-  const historyText = gameState.history.map((h: any) => {
+  // Add simplified match history for public view
+  const publicHistoryText = gameState.history.map((h: any) => {
     const roundShooter = h.shooter === player1.id ? player1.username : player2.username;
     const roundResult = h.isGoal ? '⚽ GOL' : '❌ KAÇIRDI';
-    return `**Raund ${h.round}:** ${roundShooter} - ${roundResult} (${getDirectionEmoji(h.shooterChoice)} vs ${getDirectionEmoji(h.goalkeeperChoice)})`;
+    return `**Raund ${h.round}:** ${roundShooter} - ${roundResult}`;
   }).join('\n');
   
-  summaryEmbed.addField('Maç Özeti', historyText);
+  publicSummaryEmbed.addField('Maç Özeti', publicHistoryText);
   
   // Add congratulations image
-  summaryEmbed.setImage('https://media.giphy.com/media/26tPgjwtswcdUMrMQ/giphy.gif');
+  publicSummaryEmbed.setImage('https://media.giphy.com/media/26tPgjwtswcdUMrMQ/giphy.gif');
   
-  // Send the summary
+  // Create detailed summary embed for private DMs (with full information)
+  const privateSummaryEmbed = new MessageEmbed()
+    .setColor('#f1c40f')
+    .setTitle('🏆 Penaltı Yarışması Detaylı Sonuç')
+    .setDescription(`**${winner.username}** yarışmayı kazandı!`)
+    .addField('Final Skor', `**${player1.username}** ${score1} - ${score2} **${player2.username}**`)
+    .setFooter({ text: `${gameState.isGoldenGoal ? 'Altın gol kuralıyla kazandı!' : ''}` });
+  
+  // Add detailed match history for private view
+  const privateHistoryText = gameState.history.map((h: any) => {
+    const roundShooter = h.shooter === player1.id ? player1.username : player2.username;
+    const roundKeeper = h.goalkeeper === player1.id ? player1.username : player2.username;
+    const roundResult = h.isGoal ? '⚽ GOL' : '❌ KAÇIRDI';
+    return `**Raund ${h.round}:** ${roundShooter} - ${roundResult}\n` + 
+           `Atış: ${getDirectionEmoji(h.shooterChoice)} **${h.shooterChoice}** | Kaleci: ${getDirectionEmoji(h.goalkeeperChoice)} **${h.goalkeeperChoice}**`;
+  }).join('\n\n');
+  
+  privateSummaryEmbed.addField('Detaylı Maç Özeti', privateHistoryText);
+  
+  // Send private detailed summary to participants
+  player1.send({ embeds: [privateSummaryEmbed] }).catch(() => {});
+  player2.send({ embeds: [privateSummaryEmbed] }).catch(() => {});
+  
+  // Send the public summary
   await message.channel.send({
-    embeds: [summaryEmbed]
+    embeds: [publicSummaryEmbed]
   });
   
   // Add some points to the winner
