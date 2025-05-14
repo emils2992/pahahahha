@@ -174,6 +174,7 @@ export class MemStorage implements IStorage {
       fs.writeFileSync(path.join(dataDir, 'counters.json'), JSON.stringify(counters, null, 2));
       
       console.log('Veriler başarıyla kaydedildi.');
+      console.log(`İstatistikler: ${usersData.length} kullanıcı, ${teamsData.length} takım, ${teamOwnershipsData.length} takım sahipliği`);
     } catch (error) {
       console.error('Veri kaydedilirken hata oluştu:', error);
     }
