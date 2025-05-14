@@ -13,8 +13,8 @@ export function handleMessageCreate(client: Client) {
     if (message.author.bot) return;
     
     // Only allow commands in the designated channel
-    // IMPORTANT: Replace this with the actual channel ID where commands should work
-    const allowedChannelId = process.env.COMMAND_CHANNEL_ID || ''; // Get channel ID from environment variable
+    // Kanal ID'si doğrudan koda entegre edildi
+    const allowedChannelId = process.env.COMMAND_CHANNEL_ID || '1352647377940512858'; // Belirtilen kanal ID'si
     
     // Check if message is in the allowed channel or if we're in development (no restriction)
     if (allowedChannelId && message.channel.id !== allowedChannelId) {
