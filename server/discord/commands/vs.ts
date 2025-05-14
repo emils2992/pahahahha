@@ -253,27 +253,51 @@ async function playRound(message: Message, player1: DiscordUser, player2: Discor
     components: []
   });
   
-  // Send shooter message as a reply in channel 
+  // Send shooter message as a DM (private message)
   const shooterEmbed = new MessageEmbed()
     .setColor('#3498db')
     .setTitle('⚽ Penaltı Atışı')
     .setDescription(`**${shooter.username}**, penaltı atışınızı nereye yapacaksınız?`)
     .setFooter({ text: 'Seçiminizi 10 saniye içinde yapın!' });
   
-  const shooterMessage = await message.channel.send({
+  const shooterDM = await shooter.send({
+    embeds: [shooterEmbed],
+    components: [shooterRow]
+  }).catch(async (error) => {
+    // If DM fails, notify in channel and use a fallback
+    await message.channel.send({
+      content: `<@${shooter.id}>, özel mesajlarınız kapalı olduğu için size mesaj gönderemiyorum! Lütfen ayarlarınızı değiştirin ve tekrar deneyin.`
+    });
+    return null;
+  });
+  
+  // Create a fallback message in channel if DM fails
+  const shooterMessage = shooterDM || await message.channel.send({
     content: `<@${shooter.id}>`,
     embeds: [shooterEmbed],
     components: [shooterRow]
   });
   
-  // Send goalkeeper message as a reply in channel
+  // Send goalkeeper message as a DM (private message)
   const goalkeeperEmbed = new MessageEmbed()
     .setColor('#3498db')
     .setTitle('🧤 Kaleci Hamlesi')
     .setDescription(`**${goalkeeper.username}**, penaltıyı kurtarmak için hangi yöne atlayacaksınız?`)
     .setFooter({ text: 'Seçiminizi 10 saniye içinde yapın!' });
   
-  const goalkeeperMessage = await message.channel.send({
+  const goalkeeperDM = await goalkeeper.send({
+    embeds: [goalkeeperEmbed],
+    components: [goalkeeperRow]
+  }).catch(async (error) => {
+    // If DM fails, notify in channel and use a fallback
+    await message.channel.send({
+      content: `<@${goalkeeper.id}>, özel mesajlarınız kapalı olduğu için size mesaj gönderemiyorum! Lütfen ayarlarınızı değiştirin ve tekrar deneyin.`
+    });
+    return null;
+  });
+  
+  // Create a fallback message in channel if DM fails
+  const goalkeeperMessage = goalkeeperDM || await message.channel.send({
     content: `<@${goalkeeper.id}>`,
     embeds: [goalkeeperEmbed],
     components: [goalkeeperRow]
@@ -407,8 +431,22 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
     gameState.scores[shooter.id]++;
   }
   
-  // Create result embed
-  const resultEmbed = new MessageEmbed()
+  // Create result embed for channel (with limited information)
+  const channelResultEmbed = new MessageEmbed()
+    .setColor(isGoal ? '#2ecc71' : '#e74c3c')
+    .setTitle(isGoal ? '⚽ GOL!' : '🧤 KURTARIŞ!')
+    .setDescription(
+      isGoal 
+        ? `**${shooter.username}** penaltıyı gole çevirdi!\n` +
+          `**${goalkeeper.username}** kurtarış yapamadı!`
+        : `**${shooter.username}** penaltıyı kaçırdı!\n` +
+          `**${goalkeeper.username}** harika bir kurtarış yaptı!`
+    )
+    .addField('Skor', `**${player1.username}** ${gameState.scores[player1.id]} - ${gameState.scores[player2.id]} **${player2.username}**`)
+    .setImage(isGoal ? 'https://media.giphy.com/media/kGD0eFHPiEPgiGPyDf/giphy.gif' : 'https://media.giphy.com/media/e5amHniqVCLQMHgyef/giphy.gif');
+  
+  // Create detailed result embed for players (with full information)
+  const detailedResultEmbed = new MessageEmbed()
     .setColor(isGoal ? '#2ecc71' : '#e74c3c')
     .setTitle(isGoal ? '⚽ GOL!' : '🧤 KURTARIŞ!')
     .setDescription(
@@ -418,12 +456,15 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
         : `**${shooter.username}** topu ${getDirectionEmoji(gameState.shooterChoice)} **${gameState.shooterChoice}**a gönderdi!\n` +
           `**${goalkeeper.username}** harika bir kurtarış yaptı! ${getDirectionEmoji(gameState.goalkeeperChoice)} **${gameState.goalkeeperChoice}**a atlayarak kurtardı!`
     )
-    .addField('Skor', `**${player1.username}** ${gameState.scores[player1.id]} - ${gameState.scores[player2.id]} **${player2.username}**`)
-    .setImage(isGoal ? 'https://media.giphy.com/media/kGD0eFHPiEPgiGPyDf/giphy.gif' : 'https://media.giphy.com/media/e5amHniqVCLQMHgyef/giphy.gif');
+    .addField('Skor', `**${player1.username}** ${gameState.scores[player1.id]} - ${gameState.scores[player2.id]} **${player2.username}**`);
   
-  // Update the main message
+  // Send detailed results to players via DM
+  shooter.send({ embeds: [detailedResultEmbed] }).catch(() => {});
+  goalkeeper.send({ embeds: [detailedResultEmbed] }).catch(() => {});
+  
+  // Update the main message in channel with limited info
   await waitingMessage.edit({
-    embeds: [resultEmbed]
+    embeds: [channelResultEmbed]
   });
   
   // Check if the game should continue

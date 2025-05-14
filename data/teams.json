@@ -1,122 +1,122 @@
 [
   {
+    "id": 1,
     "name": "Arsenal",
     "traitType": "sansasyonel",
-    "players": [],
-    "id": 1
+    "players": []
   },
   {
+    "id": 2,
     "name": "Aston Villa",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 2
+    "players": []
   },
   {
+    "id": 3,
     "name": "Burnley",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 3
+    "players": []
   },
   {
+    "id": 4,
     "name": "Brentford",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 4
+    "players": []
   },
   {
+    "id": 5,
     "name": "Brighton",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 5
+    "players": []
   },
   {
+    "id": 6,
     "name": "Chelsea",
     "traitType": "çalkantılı",
-    "players": [],
-    "id": 6
+    "players": []
   },
   {
+    "id": 7,
     "name": "Crystal Palace",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 7
+    "players": []
   },
   {
+    "id": 8,
     "name": "Everton",
     "traitType": "çalkantılı",
-    "players": [],
-    "id": 8
+    "players": []
   },
   {
+    "id": 9,
     "name": "Fulham",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 9
+    "players": []
   },
   {
+    "id": 10,
     "name": "Leeds",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 10
+    "players": []
   },
   {
+    "id": 11,
     "name": "Sheffield United",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 11
+    "players": []
   },
   {
+    "id": 12,
     "name": "Liverpool",
     "traitType": "sansasyonel",
-    "players": [],
-    "id": 12
+    "players": []
   },
   {
+    "id": 13,
     "name": "Manchester City",
     "traitType": "sansasyonel",
-    "players": [],
-    "id": 13
+    "players": []
   },
   {
+    "id": 14,
     "name": "Manchester United",
     "traitType": "sansasyonel",
-    "players": [],
-    "id": 14
+    "players": []
   },
   {
+    "id": 15,
     "name": "Newcastle",
     "traitType": "çalkantılı",
-    "players": [],
-    "id": 15
+    "players": []
   },
   {
+    "id": 16,
     "name": "Nottingham Forest",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 16
+    "players": []
   },
   {
+    "id": 17,
     "name": "Tottenham",
     "traitType": "çalkantılı",
-    "players": [],
-    "id": 17
+    "players": []
   },
   {
+    "id": 18,
     "name": "West Ham",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 18
+    "players": []
   },
   {
+    "id": 19,
     "name": "Wolves",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 19
+    "players": []
   },
   {
+    "id": 20,
     "name": "Southampton",
     "traitType": "kurumsal",
-    "players": [],
-    "id": 20
+    "players": []
   }
 ]

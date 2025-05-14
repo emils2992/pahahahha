@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "discordId": "794205713533894696",
     "username": "emilswd",
     "currentTeam": "Chelsea",
@@ -8,15 +9,14 @@
     "teamMorale": 76,
     "titles": [],
     "points": 2,
-    "seasonRecords": {
-      "şampiyonlukSözü": "Bu sezon şampiyonluğu kesinlikle kazanacağız! Taraftarlarımıza söz veriyorum."
-    },
-    "createdAt": "2025-05-13T19:42:00.068Z",
-    "id": 1,
+    "monthlyPoints": 2,
+    "lastPointReset": "2025-05-13T19:42:11.977Z",
     "lastActionTime": {
       "pointEarning": "2025-05-13T19:42:11.976Z"
     },
-    "monthlyPoints": 2,
-    "lastPointReset": "2025-05-13T19:42:11.977Z"
+    "seasonRecords": {
+      "şampiyonlukSözü": "Bu sezon şampiyonluğu kesinlikle kazanacağız! Taraftarlarımıza söz veriyorum."
+    },
+    "createdAt": "2025-05-13T19:42:00.068Z"
   }
 ]
