@@ -1,15 +1,21 @@
-import express from "express";
-import { createServer } from "http";
+// CommonJS versiyonu - Glitch uyumluluğu için
+const express = require('express');
+const { createServer } = require('http');
+const { Client } = require('discord.js');
+const { config } = require('dotenv');
 
-// Discord Bot imports
-import { Client, Intents } from "discord.js";
+// Load environment variables if .env file exists
+config();
 
 // Basic Express server
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Main function 
+// Discord client reference
+let discordClient = null;
+
+// Main function
 async function main() {
   try {
     // Create HTTP server
@@ -65,8 +71,6 @@ async function main() {
     });
     
     // Initialize Discord bot
-    let discordClient = null;
-    
     try {
       const token = process.env.DISCORD_BOT_TOKEN;
       if (!token) {
@@ -110,10 +114,7 @@ async function main() {
     }
     
     // Start server
-    server.listen({
-      port,
-      host: "0.0.0.0",
-    }, () => {
+    server.listen(port, "0.0.0.0", () => {
       console.log(`Server running on port ${port}`);
       console.log(`Bot web interface available at http://localhost:${port}`);
       
@@ -133,4 +134,21 @@ async function main() {
 // Start the application
 main().catch(err => {
   console.error("Application error:", err);
+});
+
+// Express ve HTTP sunucusu kapatılırken düzgün şekilde Discord bot'u da kapatın
+process.on('SIGINT', () => {
+  console.log('Shutting down...');
+  if (discordClient) {
+    discordClient.destroy();
+  }
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('Shutting down...');
+  if (discordClient) {
+    discordClient.destroy();
+  }
+  process.exit(0);
 });
