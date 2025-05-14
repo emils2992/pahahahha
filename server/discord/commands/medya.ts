@@ -322,6 +322,13 @@ function calculateResponseImpact(response: string): { fanSupport: number, manage
   managementTrust += randomFactor;
   teamMorale += randomFactor;
   
+  // Potansiyel ve moral değişimlerini daha belirgin yap
+  // Dedikoduların oyuncu psikolojisini etkilemesi gerçekçi olacaktır
+  if (teamMorale < 0) {
+    // Negatif etki daha güçlü olmalı
+    teamMorale *= 2;
+  }
+  
   return {
     fanSupport: fanSupport,
     managementTrust: managementTrust,
