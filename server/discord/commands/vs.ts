@@ -539,6 +539,9 @@ async function processRoundResult(message: Message, player1: DiscordUser, player
     return;
   }
   
+  // Reset isProcessing flag
+  gameState.isProcessing = false;
+  
   // Switch roles for next round
   const tempShooter = gameState.currentShooter;
   gameState.currentShooter = gameState.currentGoalkeeper;
@@ -677,22 +680,49 @@ async function endGame(message: Message, player1: DiscordUser, player2: DiscordU
     embeds: [publicSummaryEmbed]
   });
   
-  // Add some points to the winner
+  // Kullanıcıya ödül verme işlemi
   try {
+    // Oyun ID'sini ödül verildiğini belirtmek için değiştir
+    // Bu sayede kaza ile iki kez ödül verme önlenir
+    const rewardId = `${gameId}-rewarded`;
+    
+    // Eğer bu oyun için ödül zaten verildiyse tekrar verme
+    if (activeGames.has(rewardId)) {
+      console.log(`${winner.username} için ödül zaten verilmiş, tekrar verilmiyor.`);
+      return;
+    }
+    
+    // Ödül verildiğini işaretle
+    activeGames.add(rewardId);
+    
     const user = await storage.getUserByDiscordId(winner.id);
     if (user) {
-      await storage.addUserPoints(winner.id, 5);
-      await storage.addUserTitle(winner.id, "Penaltı Kralı");
-      
-      await message.channel.send({
-        embeds: [
-          new MessageEmbed()
-            .setColor('#2ecc71')
-            .setTitle('🎉 Ödül Kazanıldı')
-            .setDescription(`**${winner.username}** penaltı yarışmasını kazandı ve 5 puan kazandı!`)
-            .addField('Yeni Unvan', '👑 Penaltı Kralı')
-        ]
-      });
+      // Gecikmeli ödül verme - spam ihtimalini azaltır
+      setTimeout(async () => {
+        try {
+          await storage.addUserPoints(winner.id, 5);
+          await storage.addUserTitle(winner.id, "Penaltı Kralı");
+          
+          await message.channel.send({
+            embeds: [
+              new MessageEmbed()
+                .setColor('#2ecc71')
+                .setTitle('🎉 Ödül Kazanıldı')
+                .setDescription(`**${winner.username}** penaltı yarışmasını kazandı ve 5 puan kazandı!`)
+                .addField('Yeni Unvan', '👑 Penaltı Kralı')
+            ]
+          });
+          
+          console.log(`${winner.username} kullanıcısına 5 puan ve "Penaltı Kralı" unvanı verildi.`);
+        } catch (rewardError) {
+          console.error('Gecikmeli ödül verme hatası:', rewardError);
+        }
+        
+        // 1 dakika sonra ödül kaydını temizle
+        setTimeout(() => {
+          activeGames.delete(rewardId);
+        }, 60000);
+      }, 2000); // 2 saniye sonra ödül ver
     }
   } catch (error) {
     console.error('Winner reward error:', error);
