@@ -1,15 +1,14 @@
-const { 
-  Message, 
+import { 
   MessageEmbed, 
   MessageActionRow, 
   MessageSelectMenu
-} = require('discord.js');
-const { storage } = require('../../storage');
-const { createTacticEmbed } = require('../utils/embeds');
-const { checkUserTeam, createTutorialEmbed } = require('../utils/helpers');
+} from 'discord.js';
+import { storage } from '../../storage.js';
+import { createTacticEmbed } from '../utils/embeds.js';
+import { checkUserTeam, createTutorialEmbed } from '../utils/helpers.js';
 
 // Tactic command
-const taktikCommand = {
+export const taktikCommand = {
   name: 'taktik',
   description: 'Taktik formasyonu belirle',
   usage: '.taktik [formasyon]',
@@ -239,6 +238,4 @@ async function incrementTacticalDecisions(discordId) {
   return updatedUser?.points || 0;
 }
 
-module.exports = {
-  taktikCommand
-};
+// export statement is at the top of the file
