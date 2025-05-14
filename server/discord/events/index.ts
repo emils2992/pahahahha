@@ -1,12 +1,9 @@
 import { Client, Message } from 'discord.js';
 import { commands } from '../commands';
 
-// Define the command interface based on the one in help.ts
-interface DiscordCommand {
-  name: string;
-  description: string;
-  usage: string;
-  execute: (message: Message, args: string[]) => Promise<any>;
+// Type assertion function to safely access command properties
+function asCommand(cmd: any): { execute: (message: Message, args: string[]) => Promise<any> } {
+  return cmd as { execute: (message: Message, args: string[]) => Promise<any> };
 }
 
 // Handler for message create event
@@ -40,7 +37,7 @@ export function handleMessageCreate(client: Client) {
         // Get help command and execute it
         const helpCommand = commands.get('help');
         if (helpCommand) {
-          return helpCommand.execute(message, []);
+          return asCommand(helpCommand).execute(message, []);
         }
         return;
       }
@@ -57,7 +54,7 @@ export function handleMessageCreate(client: Client) {
       
       // Execute command
       try {
-        await command.execute(message, args);
+        await asCommand(command).execute(message, args);
       } catch (error) {
         console.error(`Error executing command "${commandName}":`, error);
         message.reply({
@@ -79,7 +76,7 @@ export function handleMessageCreate(client: Client) {
       const cmdObj = commands.get(commandText);
       if (cmdObj) {
         try {
-          await cmdObj.execute(message, restArgs);
+          await asCommand(cmdObj).execute(message, restArgs);
         } catch (error) {
           console.error(`Error executing direct command "${commandText}":`, error);
           message.reply({
