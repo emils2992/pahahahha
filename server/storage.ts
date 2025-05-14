@@ -99,6 +99,8 @@ export class MemStorage implements IStorage {
     };
     
     this.teamOwnerships.set(id, ownership);
+    this.saveData(); // Değişiklikleri hemen kaydet
+    console.log(`assignTeamToUser: Takım sahipliği (${teamId} -> ${userId}) kaydedildi. ID: ${id}`);
     return ownership;
   }
   
@@ -323,6 +325,8 @@ export class MemStorage implements IStorage {
     const id = this.userIdCounter++;
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
+    this.saveData(); // Değişiklikleri hemen kaydet
+    console.log(`createUser: Yeni kullanıcı oluşturuldu: ${insertUser.username} (ID: ${id})`);
     return user;
   }
   
@@ -332,6 +336,8 @@ export class MemStorage implements IStorage {
     
     const updatedUser = { ...user, ...userData };
     this.users.set(id, updatedUser);
+    this.saveData(); // Değişiklikleri hemen kaydet
+    console.log(`updateUser: Kullanıcı güncellendi: ${user.username} (ID: ${id})`);
     return updatedUser;
   }
   
