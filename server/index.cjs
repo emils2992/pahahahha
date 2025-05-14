@@ -1,7 +1,10 @@
 // CommonJS versiyonu - Glitch uyumluluğu için
 const express = require('express');
 const { createServer } = require('http');
-const { Client } = require('discord.js');
+const { Client, Collection } = require('discord.js');
+const { log, setupServer } = require('./vite.cjs');
+const fs = require('fs');
+const path = require('path');
 
 // Basic Express server
 const app = express();
@@ -23,48 +26,14 @@ async function main() {
       res.json({ 
         status: 'operational',
         message: 'Discord bot server is running',
-        botStatus: discordClient ? 'online' : 'offline'
+        botStatus: discordClient ? 'online' : 'offline',
+        botUsername: discordClient?.user?.username || 'Not connected',
+        uptime: discordClient ? Math.floor(discordClient.uptime / 1000) + 's' : '0s'
       });
     });
     
-    // Handle root path
-    app.get('/', (req, res) => {
-      const botStatus = discordClient ? '✅ Online' : '❌ Offline (token missing)';
-      
-      res.send(`
-        <html>
-          <head>
-            <title>Football Manager Discord Bot</title>
-            <style>
-              body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-              h1 { color: #333; }
-              .status { padding: 10px; background: #e8f5e9; border-radius: 4px; margin: 20px 0; }
-              .offline { background: #ffebee; }
-              code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
-            </style>
-          </head>
-          <body>
-            <h1>Football Manager Discord Bot</h1>
-            <div class="status ${discordClient ? '' : 'offline'}">
-              <h3>Discord Bot Status: ${botStatus}</h3>
-              <p>${discordClient 
-                 ? 'Bot is ready to receive commands.' 
-                 : 'Bot is not connected. Make sure DISCORD_BOT_TOKEN is set in your environment variables.'}</p>
-            </div>
-            <p>This is a simple web interface for the Discord bot. The actual bot functionality runs through Discord commands.</p>
-            <p>Commands available:</p>
-            <ul>
-              <li><code>.takim</code> - Takım seçimi yapmak için</li>
-              <li><code>.karar</code> - Teknik direktör kararları vermek için</li>
-              <li><code>.taktik</code> - Taktik ayarları için</li>
-              <li><code>.basin</code> - Basın toplantısı düzenlemek için</li>
-              <li><code>.durum</code> - Teknik direktör durumunu görmek için</li>
-              <li><code>.h</code> - Yardım menüsü için</li>
-            </ul>
-          </body>
-        </html>
-      `);
-    });
+    // Setup server with static file serving and default route
+    setupServer(app);
     
     // Initialize Discord bot
     try {
@@ -83,20 +52,109 @@ async function main() {
           ]
         });
         
+        // Create a new collection for storing commands
+        client.commands = new Collection();
+        
+        // Check if commands directory exists
+        const commandsPath = path.join(__dirname, 'discord', 'commands');
+        let commandFiles = [];
+        
+        try {
+          if (fs.existsSync(commandsPath)) {
+            // Get all command files
+            commandFiles = fs.readdirSync(commandsPath)
+              .filter(file => file.endsWith('.js') || file.endsWith('.cjs'))
+              .filter(file => file !== 'index.js' && file !== 'index.cjs');
+            
+            // Load each command
+            for (const file of commandFiles) {
+              try {
+                const commandPath = path.join(commandsPath, file);
+                const command = require(commandPath);
+                
+                // Get all exported commands
+                for (const key in command) {
+                  if (key.endsWith('Command') && typeof command[key] === 'object' && command[key].name) {
+                    const cmd = command[key];
+                    client.commands.set(cmd.name, cmd);
+                    console.log(`Loaded command: ${cmd.name}`);
+                    
+                    // Add Turkish alias for help command
+                    if (cmd.name === 'help') {
+                      client.commands.set('yardım', cmd);
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error(`Error loading command file ${file}:`, error);
+              }
+            }
+          } else {
+            console.warn(`Commands directory not found: ${commandsPath}`);
+          }
+        } catch (error) {
+          console.error('Error loading commands:', error);
+        }
+        
         // Register bot events
         client.on('ready', () => {
           console.log(`Logged in as ${client.user.tag}!`);
+          client.user.setActivity('.h | Futbol Menajerlik', { type: 'PLAYING' });
         });
         
         client.on('messageCreate', async (message) => {
-          // Ignore messages from bots or messages that don't start with the prefix
-          if (message.author.bot || !message.content.startsWith('.')) return;
+          // Ignore messages from bots
+          if (message.author.bot) return;
           
-          console.log(`Message received: ${message.content}`);
+          // Check if the message starts with the prefix
+          const prefix = '.';
+          if (!message.content.startsWith(prefix)) return;
           
-          // Simple ping command for testing
-          if (message.content === '.ping') {
-            message.reply('Pong! Bot is working.');
+          // Parse the command and arguments
+          const args = message.content.slice(prefix.length).trim().split(/ +/);
+          const commandName = args.shift().toLowerCase();
+          
+          // Log the received command
+          console.log(`Command received: ${commandName} with args: [${args.join(', ')}]`);
+          
+          // Check if the command exists
+          const command = client.commands.get(commandName);
+          
+          // If command doesn't exist, handle simple built-in commands
+          if (!command) {
+            // Simple ping command for testing
+            if (commandName === 'ping') {
+              return message.reply('Pong! Bot is working.');
+            }
+            
+            // Simple help command if no custom help is loaded
+            if (commandName === 'h' || commandName === 'help' || commandName === 'yardım') {
+              const helpEmbed = {
+                color: 0x0099ff,
+                title: 'Teknik Direktör Bot Yardım',
+                description: 'Aşağıdaki komutları kullanarak futbol menajerlik simülasyonunu oynayabilirsiniz:',
+                fields: [
+                  { name: '.takim', value: 'Takım seçimi yapmak için' },
+                  { name: '.taktik', value: 'Takım taktiklerini belirlemek için' },
+                  { name: '.karar', value: 'Teknik direktör kararları vermek için' },
+                  { name: '.basin', value: 'Basın toplantısı düzenlemek için' },
+                  { name: '.durum', value: 'Teknik direktör durumunuzu görmek için' }
+                ],
+                footer: { text: 'Futbol Menajerlik Discord Bot' },
+              };
+              
+              return message.reply({ embeds: [helpEmbed] });
+            }
+            
+            return; // Command doesn't exist
+          }
+          
+          // Execute the command
+          try {
+            await command.execute(message, args);
+          } catch (error) {
+            console.error(`Error executing command ${commandName}:`, error);
+            message.reply('Bu komut çalıştırılırken bir hata oluştu!');
           }
         });
         
