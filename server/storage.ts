@@ -344,6 +344,12 @@ export class MemStorage implements IStorage {
     const user = await this.getUserByDiscordId(discordId);
     if (!user) return undefined;
     
+    // Değişiklikleri konsola yazdır
+    console.log(`STAT CHANGES for ${discordId}:`);
+    console.log(`  Fan Support: ${user.fanSupport || 50} -> ${(user.fanSupport || 50) + fanSupportChange} (${fanSupportChange > 0 ? '+' : ''}${fanSupportChange})`);
+    console.log(`  Management Trust: ${user.managementTrust || 50} -> ${(user.managementTrust || 50) + managementTrustChange} (${managementTrustChange > 0 ? '+' : ''}${managementTrustChange})`);
+    console.log(`  Team Morale: ${user.teamMorale || 50} -> ${(user.teamMorale || 50) + teamMoraleChange} (${teamMoraleChange > 0 ? '+' : ''}${teamMoraleChange})`);
+    
     // Apply changes with limits (0-100)
     const newFanSupport = Math.max(0, Math.min(100, (user.fanSupport || 50) + fanSupportChange));
     const newManagementTrust = Math.max(0, Math.min(100, (user.managementTrust || 50) + managementTrustChange));
@@ -357,6 +363,7 @@ export class MemStorage implements IStorage {
     };
     
     this.users.set(user.id, updatedUser);
+    this.saveData(); // Değişiklikleri hemen kaydet
     
     // Kontrol et - eğer değerlerden herhangi biri 25'in altına düşerse, kullanıcı kovulur
     // Kovulma durumunda, kullanıcının takım üyeliğini sıfırla
@@ -373,6 +380,7 @@ export class MemStorage implements IStorage {
       updatedUser.teamMorale = 50;
       
       this.users.set(user.id, updatedUser);
+      this.saveData(); // Değişiklikleri hemen kaydet
       
       // Not: Gerçek bir uygulamada burada kullanıcıya kovulduğuna dair bildirim gönderilirdi
     }
@@ -395,6 +403,9 @@ export class MemStorage implements IStorage {
   }
   
   async addUserPoints(discordId: string, points: number): Promise<User | undefined> {
+    // Bilgi amaçlı puan değişimini konsola yazdır
+    console.log(`POINTS CHANGES for ${discordId}: Adding ${points} points`);
+    
     // Check command timeout first (6 saatte bir puan kazanabilir)
     const canEarnPoints = await this.checkCommandTimeout(discordId, "pointEarning", 360); // 6 saat = 360 dakika
     if (!canEarnPoints) {
@@ -412,6 +423,9 @@ export class MemStorage implements IStorage {
     const user = await this.getUserByDiscordId(discordId);
     if (!user) return undefined;
     
+    // Güncel puanlarını göster
+    console.log(`  Mevcut puan: ${user.points || 0}`);
+    
     // Update monthly points as well as total points
     const updatedMonthlyPoints = (user.monthlyPoints || 0) + points;
     const updatedUser = { 
@@ -420,7 +434,11 @@ export class MemStorage implements IStorage {
       monthlyPoints: updatedMonthlyPoints
     };
     
+    // Yeni puanları göster
+    console.log(`  Yeni puan: ${updatedUser.points}`);
+    
     this.users.set(user.id, updatedUser);
+    this.saveData(); // Değişiklikleri hemen kaydet
     return updatedUser;
   }
   

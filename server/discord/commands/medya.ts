@@ -279,44 +279,50 @@ function calculateResponseImpact(response: string): { fanSupport: number, manage
   let managementTrust = 0;
   let teamMorale = 0;
   
-  // Calculate based on response length
+  // Calculate based on response length - daha etkili puanlar
   if (response.length > 10) {
-    fanSupport += 2;
+    fanSupport += 5; // 2 -> 5
   }
   
   if (response.length > 50) {
-    fanSupport += 3;
-    managementTrust += 2;
+    fanSupport += 5;  // 3 -> 5
+    managementTrust += 5; // 2 -> 5
   }
   
-  // Check for positive words
+  if (response.length > 100) {
+    fanSupport += 5;
+    managementTrust += 5;
+    teamMorale += 5;
+  }
+  
+  // Check for positive words - daha etkili puanlar
   const positiveWords = ['iyi', 'memnun', 'mutlu', 'başarı', 'destek', 'güven', 'kazanmak'];
   for (const word of positiveWords) {
     if (response.toLowerCase().includes(word)) {
-      fanSupport += 1;
-      teamMorale += 1;
+      fanSupport += 3; // 1 -> 3
+      teamMorale += 3; // 1 -> 3
     }
   }
   
-  // Check for negative words
+  // Check for negative words - daha etkili puanlar
   const negativeWords = ['kötü', 'başarısız', 'kızgın', 'üzgün', 'kaybetmek', 'sorun', 'eleştiri'];
   for (const word of negativeWords) {
     if (response.toLowerCase().includes(word)) {
-      fanSupport -= 1;
-      teamMorale -= 1;
+      fanSupport -= 3; // 1 -> 3
+      teamMorale -= 3; // 1 -> 3
     }
   }
   
-  // Check for professional words - improves management trust
+  // Check for professional words - improves management trust - daha etkili puanlar
   const professionalWords = ['profesyonel', 'çalışmak', 'plan', 'strateji', 'analiz', 'gelişim'];
   for (const word of professionalWords) {
     if (response.toLowerCase().includes(word)) {
-      managementTrust += 1;
+      managementTrust += 3; // 1 -> 3
     }
   }
   
-  // Random element
-  const randomFactor = Math.floor(Math.random() * 5) - 2; // -2 to +2
+  // Random element - daha geniş aralık
+  const randomFactor = Math.floor(Math.random() * 7) - 3; // -3 to +3 (-2 to +2'den değişti)
   
   fanSupport += randomFactor;
   managementTrust += randomFactor;
@@ -324,10 +330,14 @@ function calculateResponseImpact(response: string): { fanSupport: number, manage
   
   // Potansiyel ve moral değişimlerini daha belirgin yap
   // Dedikoduların oyuncu psikolojisini etkilemesi gerçekçi olacaktır
-  if (teamMorale < 0) {
-    // Negatif etki daha güçlü olmalı
-    teamMorale *= 2;
-  }
+  
+  // Negatif etki daha güçlü olmalı
+  if (fanSupport < 0) fanSupport *= 2;
+  if (managementTrust < 0) managementTrust *= 2;
+  if (teamMorale < 0) teamMorale *= 2;
+  
+  // Değişimleri konsola yazdır
+  console.log(`calculateResponseImpact: fanSupport=${fanSupport}, managementTrust=${managementTrust}, teamMorale=${teamMorale}`);
   
   return {
     fanSupport: fanSupport,
